@@ -167,11 +167,25 @@ namespace Stevebot
                                 await message.Channel.SendMessageAsync("👋");
                     }
                 }
-            }    
+            }   
+            else
+            {
+                if (lastChatCheck > DateTime.Now - new TimeSpan(1,0,0))
+                {
+                    lastChatCheck = DateTime.Now;
+                    if (rdm.Next(1000) <= 50)
+                    {
+                        
+                    }
+                }
+
+                
+            } 
 
             else return;
 
         }
+        public static DateTime lastChatCheck = new DateTime(0);
 
         async void BuildSBPS()
         {
