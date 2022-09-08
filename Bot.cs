@@ -152,7 +152,7 @@ namespace Stevebot
             {
                 using (message.Channel.EnterTypingState())
                 {
-                    Commands.Chat chat = Commands.Chat.Chats.Where(x => x.channel_id == message.Channel.Id).First();
+                    Chat chat = Chat.Chats.Where(x => x.channel_id == message.Channel.Id).First();
 
                     bool exited = false;
                     if (!chat.users.Contains(message.Author.Id))
@@ -175,7 +175,7 @@ namespace Stevebot
                     lastChatCheck = DateTime.Now;
                     if (rdm.Next(1000) <= 50)
                     {
-                        
+                        Chat chat = new Chat();
                     }
                 }
 
