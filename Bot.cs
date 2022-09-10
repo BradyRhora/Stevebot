@@ -148,7 +148,7 @@ namespace Stevebot
                     Console.WriteLine(e.Message);
                 }
             }
-            else if (Commands.Chat.Chats.Select(x => x.channel_id == message.Channel.Id).Count() != 0)
+            else if (Chat.Chats.Select(x => x.channel_id == message.Channel.Id).Count() != 0)
             {
                 using (message.Channel.EnterTypingState())
                 {
@@ -167,23 +167,23 @@ namespace Stevebot
                                 await message.Channel.SendMessageAsync("👋");
                     }
                 }
-            }   
+            }
             else
             {
-                if (lastChatCheck > DateTime.Now - new TimeSpan(1,0,0))
+                if (lastChatCheck < DateTime.Now - new TimeSpan(0,10,0))
                 {
                     lastChatCheck = DateTime.Now;
-                    if (rdm.Next(1000) <= 50)
+                    int chance = rdm.Next(1000);
+                    Console.WriteLine(chance);
+                    if (chance <= 50)
                     {
-                        Chat chat = new Chat();
+                        Console.WriteLine("I want to join the chat..");
+                        Chat chat = new Chat(message.Author.Id,message.Channel.Id, true);
                     }
                 }
 
                 
             } 
-
-            else return;
-
         }
         public static DateTime lastChatCheck = new DateTime(0);
 

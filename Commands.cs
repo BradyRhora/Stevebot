@@ -39,11 +39,11 @@ namespace Stevebot
 
                     var trimmed = firstMsg.ToString().Trim('"', ' ', '"');
                     await Context.Channel.SendMessageAsync(trimmed);
-                    newChat = new Chat(Context.User.Id, Context.Guild.Id, Context.Channel.Id, trimmed);
+                    newChat = new Chat(Context.User.Id, Context.Channel.Id, trimmed);
                 }
                 else
                 {
-                    newChat = new Chat(Context.User.Id, Context.Guild.Id, Context.Channel.Id);
+                    newChat = new Chat(Context.User.Id, Context.Channel.Id);
                     await Context.Channel.SendMessageAsync(await newChat.GetNextMessageAsync(Context.Message));
                 }
                 Chat.Chats.Add(newChat);

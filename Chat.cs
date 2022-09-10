@@ -1,4 +1,8 @@
 using System;
+using System.Linq;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Discord;
 
 namespace Stevebot
 {
@@ -7,26 +11,31 @@ namespace Stevebot
         public static List<Chat> Chats = new List<Chat>();
         public ulong[] users{ get; } = new ulong[10];
         List<ulong> left_users { get; } = new List<ulong>();
-        public ulong guild_id { get; }
         public ulong channel_id { get; }
         public List<KeyValuePair<ulong,string>> messageHistory { get; set; }
-        public bool just_listening { get; }
+        bool just_listening = false;
+        int messagesUntilJoin = 0;
 
-        public Chat(ulong user, ulong guild, ulong channel, string firstMsg)
+        private string[] prompts = { 
+                                        "This is a chat log between an all-knowing but kind Artificial Intelligence, [BOT] and a human, [USER]. The current date is [DATE]",
+                                        "This is a chat log between some users. Occasionally, an Artificial Intelligence known as [BOT] chimes in with his knowledge banks or just to have fun. The current date is [DATE]."
+                                   };
+
+        public Chat(ulong user, ulong channel, string firstMsg)
         {
             users[0] = user;
-            guild_id = guild;
             channel_id = channel;
             messageHistory = new List<KeyValuePair<ulong, string>>();
             messageHistory.Add(new KeyValuePair<ulong,string>(user,firstMsg));
         }
 
-        public Chat(ulong user, ulong guild, ulong channel)
+        public Chat(ulong user, ulong channel, bool listening = false)
         {
             users[0] = user;
-            guild_id = guild;
             channel_id = channel;
             messageHistory = new List<KeyValuePair<ulong, string>>();
+            just_listening = listening;
+            if (listening) messagesUntilJoin = Bot.rdm.Next(3, 16);
         }
 
         public bool Join(IUser user)
@@ -75,8 +84,18 @@ namespace Stevebot
             messageHistory.Add(new KeyValuePair<ulong, string>(message.Author.Id,message.Content));
             string botName = Bot.client.CurrentUser.Username;
 
-            // move to class variable so that different prompts can be used
-            string fullMsg = $"This is a chat log between an Artificial Intelligence, {botName} and a human, {await Bot.client.GetUserAsync(users[0])}. The current date is {DateTime.Now.ToString("MMMM d, hh:mmtt")}\n\n";
+            if (just_listening && --messagesUntilJoin > 0)
+            {
+                Console.WriteLine($"..in {messagesUntilJoin} messages..");
+                return "";
+            }
+
+            string fullMsg;
+            if (just_listening) fullMsg = prompts[1];
+            else fullMsg = prompts[0];
+            
+            fullMsg = fullMsg.Replace("[BOT]", botName).Replace("[USER]", (await Bot.client.GetUserAsync(users[0])).Username).Replace("[DATE]", DateTime.Now.ToString("MMMM d, hh:mmtt"));
+
             foreach (var msg in messageHistory)
             {
                 if (msg.Key != 0)

@@ -54,6 +54,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Bot.cs" />
+    <Compile Include="Chat.cs" />
     <Compile Include="Commands.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="Functions.cs" />
