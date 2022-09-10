@@ -15,6 +15,11 @@ namespace Stevebot
             public static Color DEFAULT = new Color();
         }
 
+        public class Emotes
+        {
+            public static char EAR = '👂';
+        }
+
         public class Users
         {
             public const ulong BRADY = 108312797162541056;

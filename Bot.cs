@@ -177,6 +177,8 @@ namespace Stevebot
                     Console.WriteLine(chance);
                     if (chance <= 50)
                     {
+                        var gUser = client.CurrentUser as IGuildUser;
+                        gUser.Edit(name:gUser.DisplayName + Constants.Emotes.EAR);
                         Console.WriteLine("I want to join the chat..");
                         Chat chat = new Chat(message.Author.Id,message.Channel.Id, true);
                     }

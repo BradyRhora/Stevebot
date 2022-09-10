@@ -84,10 +84,17 @@ namespace Stevebot
             messageHistory.Add(new KeyValuePair<ulong, string>(message.Author.Id,message.Content));
             string botName = Bot.client.CurrentUser.Username;
 
-            if (just_listening && --messagesUntilJoin > 0)
+            if (just_listening)
             {
-                Console.WriteLine($"..in {messagesUntilJoin} messages..");
-                return "";
+                if (--messagesUntilJoin > 0)
+                {
+                    Console.WriteLine($"..in {messagesUntilJoin} messages..");
+                    return "";
+                }
+                else if (messagesUntilJoin == 0) {
+                    var gUser = Bot.client.CurrentUser as IGuildUser;
+                    gUser.Edit(name:gUser.DisplayName.Trim(Constants.Emotes.EAR));
+                }
             }
 
             string fullMsg;
