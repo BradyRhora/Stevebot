@@ -37,7 +37,7 @@ namespace Stevebot
                 {
                     var firstMsg = await Bot.openapi.Completions.CreateCompletionAsync("Say the first line in a conversation:\n", max_tokens: 128, temperature: 0.8);
 
-                    var trimmed = firstMsg.ToString().Trim('"', ' ', '"');
+                    var trimmed = firstMsg.ToString().Trim('"', ' ', '"','\n');
                     await Context.Channel.SendMessageAsync(trimmed);
                     newChat = new Chat(Context.User.Id, Context.Channel.Id, trimmed);
                 }
@@ -46,7 +46,6 @@ namespace Stevebot
                     newChat = new Chat(Context.User.Id, Context.Channel.Id);
                     await Context.Channel.SendMessageAsync(await newChat.GetNextMessageAsync(Context.Message));
                 }
-                Chat.Chats.Add(newChat);
                 await Context.Message.RemoveReactionAsync(Emoji.Parse("💬"), Bot.client.CurrentUser);
             }
         }

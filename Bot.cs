@@ -43,11 +43,6 @@ namespace Stevebot
 
             await Task.Delay(-1);*/
 
-
-
-
-
-
             try
             {
                 DiscordSocketConfig config = new DiscordSocketConfig() { MessageCacheSize = 1000 };
@@ -71,12 +66,12 @@ namespace Stevebot
 
                 await client.StartAsync();
                 Console.WriteLine($"Connected.\nBot successfully initialized.");
-                
+
                 /*/BuildSBPS();
                 Console.WriteLine("Activating SBPS Update Timer..");
                 sbpsTimer = new System.Timers.Timer(1000 * 60);
                 sbpsTimer.Elapsed += new System.Timers.ElapsedEventHandler(SBPSUpdate);*/
-                
+
                 await Task.Delay(-1);
             }
             catch (Exception e)
@@ -94,9 +89,16 @@ namespace Stevebot
         public async Task InstallCommands()
         {
             client.MessageReceived += HandleCommand;
+            client.Ready += Ready;
             await commands.AddModulesAsync(Assembly.GetEntryAssembly(), services: null);
         }
 
+        private async Task Ready()
+        {
+            var bbGen = await client.GetChannelAsync(Constants.Channels.BB_GENERAL) as IGuildChannel;
+            var gUser = await bbGen.GetUserAsync(client.CurrentUser.Id);
+            await gUser.ModifyAsync(x => x.Nickname = gUser.DisplayName.Replace(Constants.Emotes.EAR.Name, ""));
+        }
 
         public static void SBPSUpdate(object sender, System.Timers.ElapsedEventArgs e)
         {
@@ -106,7 +108,7 @@ namespace Stevebot
             }
         }
 
-
+        const int LISTEN_CHANCE = 5; //%
         public async Task HandleCommand(SocketMessage messageParam)
         {
             SocketUserMessage message = messageParam as SocketUserMessage;
@@ -150,22 +152,19 @@ namespace Stevebot
             }
             else if (Chat.Chats.Select(x => x.channel_id == message.Channel.Id).Count() != 0)
             {
-                using (message.Channel.EnterTypingState())
+                Chat chat = Chat.Chats.Where(x => x.channel_id == message.Channel.Id).First();
+
+                bool exited = false;
+                if (!chat.users.Contains(message.Author.Id))
+                    exited = !chat.Join(message.Author);
+
+                if (!exited)
                 {
-                    Chat chat = Chat.Chats.Where(x => x.channel_id == message.Channel.Id).First();
-
-                    bool exited = false;
-                    if (!chat.users.Contains(message.Author.Id))
-                        exited = !chat.Join(message.Author);
-
-                    if (!exited)
-                    {
-                        var response = await chat.GetNextMessageAsync(message);
-                        await message.Channel.SendMessageAsync(response);
-                        if (message.Content.ToLower().Contains("goodbye"))
-                            if (chat.Leave(message.Author))
-                                await message.Channel.SendMessageAsync("👋");
-                    }
+                    var response = await chat.GetNextMessageAsync(message);
+                    await message.Channel.SendMessageAsync(response);
+                    if (message.Content.ToLower().Contains("goodbye") || message.Content.ToLower().Contains("seeya"))
+                        if (chat.Leave(message.Author))
+                            await message.Channel.SendMessageAsync("👋");
                 }
             }
             else
@@ -175,10 +174,10 @@ namespace Stevebot
                     lastChatCheck = DateTime.Now;
                     int chance = rdm.Next(1000);
                     Console.WriteLine(chance);
-                    if (chance <= 50)
+                    if (chance <= LISTEN_CHANCE * 10)
                     {
-                        var gUser = client.CurrentUser as IGuildUser;
-                        gUser.Edit(name:gUser.DisplayName + Constants.Emotes.EAR);
+                        var gUser = (message.Channel as SocketGuildChannel).GetUser(client.CurrentUser.Id);
+                        await gUser.ModifyAsync(x => x.Nickname = gUser.DisplayName + Constants.Emotes.EAR.Name);
                         Console.WriteLine("I want to join the chat..");
                         Chat chat = new Chat(message.Author.Id,message.Channel.Id, true);
                     }

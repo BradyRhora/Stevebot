@@ -17,7 +17,7 @@ namespace Stevebot
 
         public class Emotes
         {
-            public static char EAR = '👂';
+            public static Emoji EAR = Emoji.Parse("👂");
         }
 
         public class Users
@@ -28,8 +28,8 @@ namespace Stevebot
 
         public class Channels
         {
-            public static ulong HALO_REACH_FRIENDS = 234882379880071168;
-            public static ulong GENERAL = 195670713183633408;
+            public static ulong BB_HALO_REACH_FRIENDS = 234882379880071168;
+            public static ulong BB_GENERAL = 195670713183633408;
         }
 
         public class Strings
