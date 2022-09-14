@@ -31,13 +31,17 @@ namespace Stevebot
 
 
         public static List<Chat> Chats = new List<Chat>();
+
         public ulong[] users{ get; } = new ulong[10];
         List<ulong> left_users { get; } = new List<ulong>();
         public ulong channel_id { get; }
         public List<ChatMessage> messageHistory { get; set; }
-        //public List<KeyValuePair<ulong,string>> messageHistory { get; set; }
+
         bool just_listening = false;
         int messagesUntilJoin = 0;
+
+        DateTime lastTimeSent = DateTime.Min;
+        int minuteDelay = 0;
 
         private string[] prompts = {
                                         "This is a chat log between an all-knowing but kind and humorous Artificial Intelligence, [BOT], and a human, [USER]. The current date is [DATE].",
@@ -109,8 +113,15 @@ namespace Stevebot
         {
 
             messageHistory.Add(new ChatMessage(message.Author.Id,message.Content.Replace(">talk","").Trim(' ')));
-            string botName = Bot.client.CurrentUser.Username;
+            
+            if ((!message.Content.ToLower().Contains("stevey") || message.MentionedUsers.Contains(/*finish me*/) && DateTime.Now - lastTimeSent < new TimeSpan(0,0,minuteDelay)) //needs testing
+                return "";
 
+            minuteDelay = rdm.Next(0,5);
+            lastTimeSent = DateTime.Now;
+            
+            
+            string botName = Bot.client.CurrentUser.Username;
             if (just_listening)
             {
                 if (--messagesUntilJoin > 0)
@@ -151,7 +162,7 @@ namespace Stevebot
                 fullMsg += $"[{DateTime.Now.ToShortTimeString()}] " + botName + ": \"";
                 var response = await Bot.openapi.Completions.CreateCompletionAsync(fullMsg, temperature: 0.85, max_tokens: 128, stopSequences: "\"");
                 messageHistory.Add(new ChatMessage(Constants.Users.STEVEY, response.ToString()));
-
+                System.Threading.Thread.Sleep(response.Length * 100); // test
                 return response.ToString();
             }
         }
