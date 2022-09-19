@@ -45,6 +45,12 @@ namespace Stevebot
             {
                 return Chats.Where(x=>x.Id = id).FirstOrDefault();
             }
+
+            public static void RemoveUser(ulong id)
+            {
+                var usr = GetUser(id);
+                Chats.Remove(usr);
+            }
         }
 
 
@@ -105,21 +111,11 @@ namespace Stevebot
         public bool Leave(IUser user)
         {
             bool found = false;
-            for (int i = 0; i < 10; i++)
-            {
-                if (users[i] == user.Id)
-                {
-                    users[i] = 0;
-                    found = true;
-                }
-                else if (found)
-                    users[i - 1] = users[i];
-
-
-                messageHistory.Add(new ChatMessage(0, $"{user.Username} has left the chat."));
-            }
-            left_users.Add(user.Id);
-            if (users.Where(x => x != 0).Count() == 0)
+            var usr = ChatUser.RemoveUser(user.Id);
+            
+            messageHistory.Add(new ChatMessage(0, $"{user.Username} has left the chat."));
+                        
+            if (users.Where(x => x.Left = false).Count() == 0)
             {
                 Chats.Remove(this);
                 return true;
