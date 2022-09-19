@@ -162,7 +162,9 @@ namespace Stevebot
                 {
                     var response = await chat.GetNextMessageAsync(message);
                     await message.Channel.SendMessageAsync(response);
-                    if (message.Content.ToLower().Contains("goodbye") || message.Content.ToLower().Contains("seeya"))
+
+                    string[] partingTerms = { "goodbye", "seeya", "cya" };
+                    if (partingTerms.Where(x=>message.Content.Contains(x)).Count() > 0)
                         if (chat.Leave(message.Author))
                             await message.Channel.SendMessageAsync("👋");
                 }
