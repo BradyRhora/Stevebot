@@ -29,11 +29,28 @@ namespace Stevebot
             }
         }
 
+        public class ChatUser
+        {
+            public ulong Id { get; }
+            public DateTime LastMsg { get; set; }
+            public bool Left { get; set; } = false;
+
+            public ChatUser(ulong id)
+            {
+                Id = id;
+                LastMsg = DateTime.Now;
+            }
+
+            public static ChatUser GetUser(ulong id)
+            {
+                return Chats.Where(x=>x.Id = id).FirstOrDefault();
+            }
+        }
+
 
         public static List<Chat> Chats = new List<Chat>();
 
-        public ulong[] users{ get; } = new ulong[10];
-        List<ulong> left_users { get; } = new List<ulong>();
+        public List<ChatUser> users{ get; } = new List<ChatUser>();
         public ulong channel_id { get; }
         public List<ChatMessage> messageHistory { get; set; }
 
@@ -72,12 +89,13 @@ namespace Stevebot
 
         public bool Join(IUser user)
         {
-            if (left_users.Contains(user.Id))
-                return false;
+            var user = ChatUser.GetUser(user.Id);
+            if (user != null) {
+                if (user.Left)
+                    return false;
+            }
 
-            for (int i = 1; i < 10; i++)
-                if (users[i] == 0)
-                    users[i] = user.Id;
+            users.Add(new ChatUser(user.Id));
 
             messageHistory.Add(new ChatMessage(0, $"{user.Username} has entered the chat."));
             return true;
