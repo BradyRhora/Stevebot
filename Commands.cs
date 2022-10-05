@@ -28,7 +28,11 @@ namespace Stevebot
         [Command("talk"), Summary("Chat time with Stevey.")]
         public async Task Talk([Remainder]string input = "")
         {
-            if (Chat.Chats.Where(x => x.users.Contains(Context.User.Id)).Count() > 0) await Context.Channel.SendMessageAsync("We're already chatting somewhere else.");
+            if (Chat.Chats.Where(x => x.channel_id == Context.Channel.Id).Count() > 0)
+            {
+                if (input.ToLower() == "end") Chat.Chats.Remove(Chat.Chats.Where(x => x.channel_id == Context.Channel.Id).First());
+                else await Context.Channel.SendMessageAsync("We're already chatting here.");
+            }
             else
             {
                 await Context.Message.AddReactionAsync(Emoji.Parse("💬"));
@@ -37,7 +41,7 @@ namespace Stevebot
                 {
                     var firstMsg = await Bot.openapi.Completions.CreateCompletionAsync("Say the first line in a conversation:\n", max_tokens: 128, temperature: 0.8);
 
-                    var trimmed = firstMsg.ToString().Trim('"', ' ', '"','\n');
+                    var trimmed = firstMsg.ToString().Trim('"', ' ', '"', '\n');
                     await Context.Channel.SendMessageAsync(trimmed);
                     newChat = new Chat(Context.User.Id, Context.Channel.Id, trimmed);
                 }
