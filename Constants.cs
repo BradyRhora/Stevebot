@@ -17,7 +17,8 @@ namespace Stevebot
 
         public class Emotes
         {
-            public static Emoji EAR = Emoji.Parse("👂");
+            public static Emoji EAR = new Emoji("👂");
+            public static Emoji WAVE = new Emoji("👋");
         }
 
         public class Users

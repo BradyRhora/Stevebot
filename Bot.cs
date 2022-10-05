@@ -25,7 +25,9 @@ namespace Stevebot
         public static CommandService commands;
         public static OpenAIAPI openapi;
 
-        public static System.Timers.Timer sbpsTimer;
+        public const char COMMAND_PREFIX = '>';
+        //public static System.Timers.Timer sbpsTimer;
+        public static System.Timers.Timer chatTimer;
         public async Task Run()
         {
             /*await Task.Run(async()=>
@@ -71,6 +73,8 @@ namespace Stevebot
                 Console.WriteLine("Activating SBPS Update Timer..");
                 sbpsTimer = new System.Timers.Timer(1000 * 60);
                 sbpsTimer.Elapsed += new System.Timers.ElapsedEventHandler(SBPSUpdate);*/
+                chatTimer = new System.Timers.Timer(1000 * 60);
+                chatTimer.Elapsed += new System.Timers.ElapsedEventHandler(Chat.ChatTimerCallBack);
 
                 await Task.Delay(-1);
             }
@@ -109,6 +113,7 @@ namespace Stevebot
         }
 
         const int LISTEN_CHANCE = 5; //%
+        public static DateTime lastChatCheck = new DateTime(0);
         public async Task HandleCommand(SocketMessage messageParam)
         {
             SocketUserMessage message = messageParam as SocketUserMessage;
@@ -117,7 +122,7 @@ namespace Stevebot
 
             int argPos = 0;
             //detect and execute commands
-            if (message.HasCharPrefix('>', ref argPos))
+            if (message.HasCharPrefix(COMMAND_PREFIX, ref argPos))
             {
                 var context = new CommandContext(client, message);
                 var result = await commands.ExecuteAsync(context, argPos, services: null);
@@ -150,47 +155,70 @@ namespace Stevebot
                     Console.WriteLine(e.Message);
                 }
             }
-            else if (Chat.Chats.Select(x => x.channel_id == message.Channel.Id).Count() != 0)
+            else if (Chat.Chats.Where(x => x.channel_id == message.Channel.Id).Count() != 0)
             {
-                Chat chat = Chat.Chats.Where(x => x.channel_id == message.Channel.Id).First();
-
-                bool exited = false;
-                if (!chat.users.Contains(message.Author.Id))
-                    exited = !chat.Join(message.Author);
-
-                if (!exited)
+                Chat chat = Chat.Chats.Where(x => x.channel_id == message.Channel.Id).FirstOrDefault();
+                if (chat != null)
                 {
-                    var response = await chat.GetNextMessageAsync(message);
-                    await message.Channel.SendMessageAsync(response);
+                    chat.Join(message.Author);
+                    var u = chat.GetUser(message.Author.Id);
 
-                    string[] partingTerms = { "goodbye", "seeya", "cya" };
-                    if (partingTerms.Where(x=>message.Content.Contains(x)).Count() > 0)
-                        if (chat.Leave(message.Author))
-                            await message.Channel.SendMessageAsync("👋");
-                }
-            }
-            else
-            {
-                if (lastChatCheck < DateTime.Now - new TimeSpan(0,10,0))
-                {
-                    lastChatCheck = DateTime.Now;
-                    int chance = rdm.Next(1000);
-                    Console.WriteLine(chance);
-                    if (chance <= LISTEN_CHANCE * 10)
+                    if (u != null && (u.Left == false || message.Content.ToLower().Contains("steve")))
                     {
-                        var gUser = (message.Channel as SocketGuildChannel).GetUser(client.CurrentUser.Id);
-                        await gUser.ModifyAsync(x => x.Nickname = gUser.DisplayName + Constants.Emotes.EAR.Name);
-                        Console.WriteLine("I want to join the chat..");
-                        Chat chat = new Chat(message.Author.Id,message.Channel.Id, true);
+                        if (u.Left) u.Left = false;
+                        var response = await chat.GetNextMessageAsync(message);
+                        if (response != "")
+                        {
+                            response = Regex.Replace(response, "(<@([0-9]*)>)", x =>
+                            {
+                                ulong id = 0;
+                                if (ulong.TryParse(x.Groups[2].Value, out id))
+                                {
+                                    return (message.Channel as SocketGuildChannel).Guild.GetUser(id).Username;
+                                }
+                                else return "";
+                            });
+
+                            response = Regex.Replace(response, "(<@&([0-9]*)>)", x =>
+                            {
+                                ulong id = 0;
+                                if (ulong.TryParse(x.Groups[2].Value, out id))
+                                {
+                                    return (message.Channel as SocketGuildChannel).Guild.GetRole(id).Name;
+                                }
+                                else return "";
+                            });
+
+                            response = response.Replace("@", "");
+
+                            await message.Channel.SendMessageAsync(response);
+
+                            string[] partingTerms = { "bye", "seeya", "cya" };
+                            if (partingTerms.Where(x => message.Content.ToLower().Contains(x)).Count() > 0)
+                                if (chat.Leave(message.Author))
+                                    await message.Channel.SendMessageAsync(Constants.Emotes.WAVE.Name);
+                        }
                     }
                 }
+            }
+            else if (lastChatCheck < (DateTime.Now - new TimeSpan(0, 5, 0)))
+            {
+                Console.WriteLine("[DEBUG] Trying to listen");
+                lastChatCheck = DateTime.Now;
 
-                
-            } 
+                int chance = rdm.Next(1000);
+                Console.WriteLine("[DEBUG] Chance: " + chance);
+                if (chance <= LISTEN_CHANCE * 10)
+                {
+                    var gUser = (message.Channel as SocketGuildChannel).GetUser(client.CurrentUser.Id);
+                    await gUser.ModifyAsync(x => x.Nickname = gUser.DisplayName + Constants.Emotes.EAR.Name);
+                    Console.WriteLine("[DEBUG] I want to join the chat..");
+                    Stevebot.Chat chat = new Stevebot.Chat(message.Author.Id, message.Channel.Id, true);
+                }                
+            }
         }
-        public static DateTime lastChatCheck = new DateTime(0);
 
-        async void BuildSBPS()
+        /*async void BuildSBPS()
         {
             /* SERIES GENERATOR   
             Console.WriteLine("Building SBPS Series...");
@@ -386,7 +414,7 @@ namespace Stevebot
             var channel = await client.GetChannelAsync(Constants.Channels.HALO_REACH_FRIENDS) as ITextChannel;
             var bracket = t.BuildChart();
             await channel.SendMessageAsync("```"+bracket+"```");
-            //await channel.SendMessageAsync("```"+ bracket + "```");*/
-        }
+            //await channel.SendMessageAsync("```"+ bracket + "```");
+        }*/
     }
 }
