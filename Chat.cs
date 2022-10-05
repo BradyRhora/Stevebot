@@ -44,7 +44,7 @@ namespace Stevebot
             }
         }
         #endregion
-        //
+
         public static List<Chat> Chats = new List<Chat>();
 
         public List<ChatUser> users { get; } = new List<ChatUser>();
