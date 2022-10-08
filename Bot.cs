@@ -75,6 +75,7 @@ namespace Stevebot
                 sbpsTimer.Elapsed += new System.Timers.ElapsedEventHandler(SBPSUpdate);*/
                 chatTimer = new System.Timers.Timer(1000 * 60);
                 chatTimer.Elapsed += new System.Timers.ElapsedEventHandler(Chat.ChatTimerCallBack);
+                chatTimer.Start();
 
                 await Task.Delay(-1);
             }
@@ -163,7 +164,7 @@ namespace Stevebot
                     chat.Join(message.Author);
                     var u = chat.GetUser(message.Author.Id);
 
-                    if (u != null && (u.Left == false || message.Content.ToLower().Contains("steve")))
+                    if (u != null && (u.Left == false || message.Content.ToLower().Contains(Chat.MIN_BOT_NAME)))
                     {
                         if (u.Left) u.Left = false;
                         var response = await chat.GetNextMessageAsync(message);
@@ -195,8 +196,7 @@ namespace Stevebot
 
                             string[] partingTerms = { "bye", "seeya", "cya" };
                             if (partingTerms.Where(x => message.Content.ToLower().Contains(x)).Count() > 0)
-                                if (chat.Leave(message.Author))
-                                    await message.Channel.SendMessageAsync(Constants.Emotes.WAVE.Name);
+                                chat.Leave(message.Author);
                         }
                     }
                 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -28,7 +29,45 @@ namespace Stevebot
         [Command("talk"), Summary("Chat time with Stevey.")]
         public async Task Talk([Remainder]string input = "")
         {
-            if (Chat.Chats.Where(x => x.channel_id == Context.Channel.Id).Count() > 0)
+            if (input.ToLower().StartsWith("remember"))
+            {
+                
+
+                Dictionary<string, string> replacements = new Dictionary<string, string>
+                {
+                    { "remember","" },
+                    { "you're", "Stevey is" },
+                    { "yours", "Steveys" },
+                    { "your", "Steveys" },
+                    { "you", "Stevey" },
+                    { "i", Context.User.Username },
+                    { "me", Context.User.Username },
+                    { "my", Context.User.Username + 's' },
+                    { "mine", Context.User.Username + 's'},
+                    { "were", "was" },
+                    { "we're", $"Stevey and {Context.User.Username} are" },
+                    { "we've", $"Stevey and {Context.User.Username} have" },
+                    { "we", $"Stevey and {Context.User.Username}" }
+                    
+                };
+
+                input = input.ToLower();
+
+                foreach (var replace in replacements)
+                {
+                    input = Regex.Replace(input, $"([^a-z]|^)({replace.Key})([^a-z]|$)", $"$1{replace.Value}$3");
+                }
+
+                input = input.Trim(' ','.','?','!',',');
+                
+                if (Properties.Settings.Default.Memory == null) Properties.Settings.Default.Memory = "";
+                Properties.Settings.Default.Memory += input + ". ";
+                Properties.Settings.Default.Save();
+
+                await ReplyAsync("Okay, I'll remember that.");
+
+            }
+            else if (Chat.Chats.Where(x => x.channel_id == Context.Channel.Id).Count() > 0)
             {
                 if (input.ToLower() == "end") Chat.Chats.Remove(Chat.Chats.Where(x => x.channel_id == Context.Channel.Id).First());
                 else await Context.Channel.SendMessageAsync("We're already chatting here.");
@@ -39,7 +78,7 @@ namespace Stevebot
                 Chat newChat = null;
                 if (input == "" || input == " ")
                 {
-                    var firstMsg = await Bot.openapi.Completions.CreateCompletionAsync("Say the first line in a conversation:\n", max_tokens: 128, temperature: 0.8);
+                    var firstMsg = await Bot.openapi.Completions.CreateCompletionAsync("Say a greeting for a conversation:\n", max_tokens: 128, temperature: 0.8);
 
                     var trimmed = firstMsg.ToString().Trim('"', ' ', '"', '\n');
                     await Context.Channel.SendMessageAsync(trimmed);

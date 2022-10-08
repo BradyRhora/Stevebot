@@ -45,23 +45,27 @@ namespace Stevebot
         }
         #endregion
 
+        // Publics
         public static List<Chat> Chats = new List<Chat>();
-
         public List<ChatUser> users { get; } = new List<ChatUser>();
         public ulong channel_id { get; }
         public List<ChatMessage> messageHistory { get; set; }
 
+        // Privates
         bool just_listening = false;
         int messagesUntilJoin = 0;
         DateTime lastTimeSent = DateTime.MinValue;
         int secondDelay = 0;
+
+        // Constants
         const int MEMORY_LENGTH = 15;
         const ulong BOT_ID = Constants.Users.STEVEY;
-        const string MIN_BOT_NAME = "steve";
+        public const string MIN_BOT_NAME = "steve";
 
         private string[] prompts = {
                                         "This is a chat log between an all-knowing but kind and humorous Artificial Intelligence, [BOT], and a human, [USER]. The current date is [DATE].",
-                                        "This is a chat log between some users in a university chat room for York University, in Toronto Canada. Occasionally, an Artificial Intelligence known as [BOT] chimes in with his knowledge banks or just to have fun. The current date is [DATE]."
+                                        "This is a chat log between some users in Toronto, Canada. Occasionally, an Artificial Intelligence known as [BOT] chimes in with his knowledge banks or just to have fun. The current date is [DATE].",
+                                        "This is a chat log between some users in Toronto, Canada. The current date is [DATE]." // in case we want stevey to act less robotly
                                    };
 
         public Chat(ulong user, ulong channel, string botFirstMsg)
@@ -99,8 +103,8 @@ namespace Stevebot
 
         }
 
-        // returns true if there are no users remaining
-        public bool Leave(IUser user)
+
+        public void Leave(IUser user)
         {
             bool found = false;
             users.Where(x => x.Id == user.Id).First().Left = true;
@@ -110,10 +114,9 @@ namespace Stevebot
 
             if (users.Where(x => x.Left == false).Count() == 0)
             {
+                (Bot.client.GetChannel(channel_id) as ITextChannel).SendMessageAsync(Constants.Emotes.WAVE.ToString());
                 Chats.Remove(this);
-                return true;
             }
-            return false;
         }
 
         public async Task Update()
@@ -164,11 +167,11 @@ namespace Stevebot
             using (message.Channel.EnterTypingState())
             {
                 string fullMsg;
-                if (just_listening) fullMsg = prompts[1];
+                if (just_listening) fullMsg = prompts[2];
                 else fullMsg = prompts[0];
                 string dnl = "\n\n"; // double newline
-                //string dnl = "  ";
                 fullMsg = fullMsg.Replace("[BOT]", botName).Replace("[USER]", (await Bot.client.GetUserAsync(users[0].Id)).Username).Replace("[DATE]", DateTime.Now.ToString("MMMM d, hh:mmtt")) + dnl;
+                fullMsg += "\n" + Properties.Settings.Default.Memory;
 
                 int start = messageHistory.Count() - (MEMORY_LENGTH - 1);
 
@@ -210,9 +213,8 @@ namespace Stevebot
 
         public static async void ChatTimerCallBack(object sender, System.Timers.ElapsedEventArgs e)
         {
-            foreach (var chat in Chats)
-            {
-                await chat.Update();
+            for(int i = Chat.Chats.Count()- 1; i >= 0; i--) { 
+                await Chat.Chats[i].Update();
             }
         }
     }
