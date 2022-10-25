@@ -32,8 +32,28 @@ namespace SBPS{
                 Tournament = a.Tournament;
             }
 
-            // TRUE for Player A | FALSE for Player B
-            public void GivePoint(bool A)
+            public void Update()
+            {
+                if (PlayerA != null && PlayerB != null)
+                {
+                    //choose stage?? should i make stages??????
+                    /*
+                        ok wait seriously how are we gonna do this
+                        compare characters pros and cons with eachother
+                        check player stats and how they flow with character stats
+                        randomness
+                        ok sounds good
+
+                        separate class for match contender???
+                            holds current character
+                            match-only modifiers?
+                            etc?????
+                    */
+
+                }
+            }
+
+            public void GivePoint(PlayerIdentifier p)
             {
                 if (A)
                 {
@@ -47,8 +67,7 @@ namespace SBPS{
                 }
             }
 
-            // TRUE for Player A ┃ FALSE for Player B 
-            public void Win(bool A)
+            public void Win(PlayerIdentifier p)
             {
 
             }
@@ -151,13 +170,13 @@ namespace SBPS{
                 /* ###################################################################### */
             }
 
-            public int DistanceToBottom(bool A = true)
+            public int DistanceToBottom(PlayerIdentifier p)
             {
                 Match curr = this;
                 int counter = 0;
                 //Console.Write($"Dist to bottom for {PlayerA} vs. {PlayerB}");
 
-                if (A)
+                if (p == PlayerIdentifier.A)
                     while (curr.PrevMatchA != null)
                     {
                         counter++;
@@ -176,6 +195,11 @@ namespace SBPS{
             public int GetRound()
             {
                 return Math.Max(DistanceToBottom(), DistanceToBottom(false)) + 1;
+            }
+
+            enum PlayerIdentifier{
+                A,
+                B
             }
         }
 

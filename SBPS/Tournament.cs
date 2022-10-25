@@ -6,6 +6,7 @@ namespace SBPS{
             List<Match> Matches = new List<Match>();
             public static Tournament Current = null;
 
+            //string tourney name? three word generation, prefix - main - suffix (suffix optional (50%?))
             //string location?
 
             public override T GetDBValScalar<T>(string name)
@@ -21,6 +22,13 @@ namespace SBPS{
             public Tournament()
             {
                 GenerateMatches(Player.GetAllShuffled());
+            }
+
+            public void Update()
+            {
+                foreach(var match in Matches){
+                    match.Update();
+                }
             }
 
             void GenerateMatches(Player[] ps)
@@ -136,7 +144,7 @@ namespace SBPS{
             }
 
             public static int DRAW_SPACING = 15;
-            public Stream DrawChart()
+            /*public Stream DrawChart()
             {
                 Bitmap bitmap = new Bitmap(200 * Rounds, 20 + ((DRAW_SPACING * 3) * MatchCount));
                 Graphics graphics = Graphics.FromImage(bitmap);
@@ -149,7 +157,7 @@ namespace SBPS{
                 Stream stream = new MemoryStream();
                 bitmap.Save(stream, System.Drawing.Imaging.ImageFormat.Jpeg);
                 return stream;
-            }
+            }*/
         }
 
 }
