@@ -11,7 +11,7 @@ using System.IO;
 using System.Reflection;
 using OpenAI_API;
 using Pastel;
-using Windows.Media.SpeechRecognition;
+//using Windows.Media.SpeechRecognition;
 
 namespace Stevebot
 {
