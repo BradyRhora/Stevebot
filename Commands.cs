@@ -16,7 +16,19 @@ namespace Stevebot
         [Command("help"), Summary("Displays commands and information about topics.")]
         public async Task Help(string topic = null)
         {
-            await Context.Channel.SendMessageAsync("ja mate!");
+            EmbedBuilder embed = new EmbedBuilder
+            {
+                Title = "Stevey Commands"
+            };
+
+            foreach (var cmd in Bot.commands.Commands)
+            {
+                string commandText = Bot.COMMAND_PREFIX + cmd.Name;
+                foreach (var param in cmd.Parameters) commandText += $" [{param.Name}]";
+                embed.AddField(commandText, cmd.Summary);
+            }
+
+            await ReplyAsync(embed: embed.Build());
         }
 
         [Command("be me"), Summary("Generate a 4chan greentext story")]
@@ -176,7 +188,81 @@ namespace Stevebot
 
             await ReplyAsync(embed: embed.Build());
         }
-        
+
+        [Command("player"), Summary("Display info about the specified player.")]
+        public async Task Player([Remainder] string input = null)
+        {
+            SBPS.Player player;
+            if (input == null)
+                player = SBPS.Player.GetRandom();
+            else
+                player = SBPS.Player.Search(input);
+
+            EmbedBuilder embed = new EmbedBuilder
+            {
+                Title = player.GetTag(),
+                Description = "Real name: " + player.GetName(),
+                Color = player.GetMain().GetColour()
+            };
+
+            double weight = player.GetWeight();
+            string sWeight = weight < 0 ? "light" : "heavy";
+            if (Math.Abs(weight) > .5) sWeight = "very " + sWeight;
+
+            double charm = player.GetCharm();
+            string sCharm = charm < 0 ? "weird" : "charming";
+            if (Math.Abs(charm) > .5) sCharm = "very " + sCharm;
+
+            double anger = player.GetAnger();
+            string sAnger = anger < 0 ? "gentle" : "angry";
+            if (Math.Abs(anger) > .5) sAnger = "very " + sAnger;
+
+            double depression = player.GetDepression();
+            string sDepress = depression < 0 ? "happy" : "depressed";
+            if (Math.Abs(depression) > .5) sDepress = "very " + sDepress;
+
+            double highness = player.GetHighness();
+            string sHigh = highness < 0 ? "sober" : "blazed";
+            if (Math.Abs(highness) > .5) sHigh = "very " + sHigh;
+
+            double coordination = player.GetCoordination();
+            string sCoordination = coordination < 0 ? "clumsy" : "coordinated";
+            if (Math.Abs(coordination) > .5) sCoordination = "very " + sCoordination;
+
+            double intelligence = player.GetIntelligence();
+            string sIntel = intelligence < 0 ? "dumb" : "smart";
+            if (Math.Abs(intelligence) > .5) sIntel = "very " + sIntel;
+
+            double tech = player.GetTechKnowledge();
+            string sTech = tech < 0 ? "non-technical" : "technical";
+            if (Math.Abs(tech) > .5) sTech = "very " + sTech;
+
+            double stink = player.GetStink();
+            string sStink = stink < 0 ? "smelly" : "clean";
+            if (Math.Abs(stink) > .5) sStink = "very " + sStink;
+
+            int fingerCount = rdm.Next(100) < 95 ? 10 : 10 + rdm.Next(-2, 2);
+            string sFinger = fingerCount.ToString();
+
+
+            embed.AddField("Main", player.GetMain().GetName());
+            if (player.GetSecondary().ID != -1)
+                embed.AddField("Secondary", player.GetSecondary().GetName());
+
+            embed.AddField("Weight", sWeight, true);
+            embed.AddField("Charm", sCharm, true);
+            embed.AddField("Anger", sAnger, true);
+            embed.AddField("Mood", sDepress, true);
+            embed.AddField("Highness", sHigh, true);
+            embed.AddField("Coordination", sCoordination, true);
+            embed.AddField("Intelligence", sIntel, true);
+            embed.AddField("Tech Knowledge", sTech, true);
+            embed.AddField("Stink", sStink, true);
+            embed.AddField("Finger Count", sFinger, true);
+
+            await ReplyAsync(embed: embed.Build());
+        }
+
     }
 
 }

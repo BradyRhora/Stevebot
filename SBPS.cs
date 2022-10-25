@@ -374,7 +374,7 @@ namespace Stevebot
                         cmd.Parameters.Add(new SQLiteParameter("$1", ID));
 
                         var val = cmd.ExecuteScalar();
-
+                        if (val == DBNull.Value || val == null) return default(T);
                         value = (T)Convert.ChangeType(val, typeof(T));
                     }
                 }
@@ -691,9 +691,19 @@ namespace Stevebot
                 return GetDBValScalar<int>("Main_ID");
             }
 
+            public Character GetMain()
+            {
+                return new Character(GetMainID());
+            }
+
             public int GetSecondaryID()
             {
                 return GetDBValScalar<int>("Secondary_ID");
+            }
+
+            public Character GetSecondary()
+            {
+                return new Character(GetSecondaryID());
             }
 
             public double GetWeight()
@@ -769,6 +779,36 @@ namespace Stevebot
                 }
                 return chars.ToArray();
             }
+
+            public static Player GetRandom()
+            {
+                using (var sql = new SQLiteConnection(Constants.Strings.DB_CONNECTION_STRING))
+                {
+                    sql.Open();
+                    var query = "SELECT ID FROM Players ORDER BY RANDOM() LIMIT 1;";
+                    using (var cmd = new SQLiteCommand(query, sql))
+                    {
+                        int id = Convert.ToInt32(cmd.ExecuteScalar());
+                        return new Player(id);
+                    }
+                }
+            }
+
+            public static Player Search(string name)
+            {
+                using (var sql = new SQLiteConnection(Constants.Strings.DB_CONNECTION_STRING))
+                {
+                    sql.Open();
+                    var query = $"SELECT ID FROM Players WHERE name like $1 LIMIT 1";
+                    using (var cmd = new SQLiteCommand(query, sql))
+                    {
+                        cmd.Parameters.AddWithValue("$1", '%' + name + '%');
+                        int id = Convert.ToInt32(cmd.ExecuteScalar());
+                        return new Player(id);
+                    }
+                }
+            }
+
         }
 
         public class Series : IDataBaseObject
