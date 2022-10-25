@@ -530,14 +530,34 @@ namespace Stevebot
                 return GetDBValScalar<double>("Style");
             }
 
-            public System.Drawing.Color GetColour()
+            public Discord.Color GetColour()
             {
-                return System.Drawing.ColorTranslator.FromHtml(GetDBValScalar<string>("Colour_Hex"));
+                var  c = System.Drawing.ColorTranslator.FromHtml(GetDBValScalar<string>("Colour_Hex"));
+                return new Discord.Color(c.R, c.G, c.B);
             }
 
             public int GetSeriesID()
             {
                 return GetDBValScalar<int>("Series_ID");
+            }
+            public Series GetSeries()
+            {
+                return new Series(GetSeriesID());
+            }
+
+            public static Character Search(string name)
+            {
+                using (var sql = new SQLiteConnection(Constants.Strings.DB_CONNECTION_STRING))
+                {
+                    sql.Open();
+                    var query = $"SELECT ID FROM Characters WHERE name like $1 LIMIT 1";
+                    using (var cmd = new SQLiteCommand(query, sql))
+                    {
+                        cmd.Parameters.AddWithValue("$1", '%' + name + '%');
+                        int id = Convert.ToInt32(cmd.ExecuteScalar());
+                        return new Character(id);
+                    }
+                }
             }
 
             public static Character GetRandom()
@@ -828,6 +848,41 @@ namespace Stevebot
                         return new Series(id);
                     }
                 }
+            }
+
+            public static Series Search(string name)
+            {
+                using (var sql = new SQLiteConnection(Constants.Strings.DB_CONNECTION_STRING))
+                {
+                    sql.Open();
+                    var query = $"SELECT ID FROM Series WHERE name like $1 LIMIT 1";
+                    using (var cmd = new SQLiteCommand(query, sql))
+                    {
+                        cmd.Parameters.AddWithValue("$1", '%' + name + '%');
+                        int id = Convert.ToInt32(cmd.ExecuteScalar());
+                        return new Series(id);
+                    }
+                }
+            }
+
+            public Character[] GetCharacters()
+            {
+                var chars = new List<Character>();
+                using (var sql = new SQLiteConnection(Constants.Strings.DB_CONNECTION_STRING))
+                {
+                    sql.Open();
+                    var query = $"SELECT ID FROM CHARACTERS WHERE SERIES_ID = $id";
+                    using (var cmd = new SQLiteCommand(query, sql))
+                    {
+                        cmd.Parameters.AddWithValue("$id", ID);
+
+                        var reader = cmd.ExecuteReader();
+                        while (reader.Read())
+                            chars.Add(new Character(reader.GetInt32(0)));
+                        
+                    }
+                }
+                return chars.ToArray();
             }
         }
 

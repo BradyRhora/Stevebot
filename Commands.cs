@@ -93,7 +93,89 @@ namespace Stevebot
             }
         }
 
-        
+        [Command("series"), Summary("Display info about the specified series.")]
+        public async Task Series([Remainder] string input = null)
+        {
+            SBPS.Series series;
+            if (input == null)
+                series = SBPS.Series.GetRandom();
+            else
+                series = SBPS.Series.Search(input);
+
+            EmbedBuilder embed = new EmbedBuilder
+            {
+                Title = series.GetName()
+            };
+
+            embed.AddField("Genre", series.GetGenre(), true);
+            embed.AddField("Release Year", series.GetReleaseYear(), true);
+
+            string gameText = "";
+            var games = series.GetCharacters();
+            embed.Color = games.First().GetColour();
+            foreach (var game in games)
+                gameText += game.GetName() + '\n';
+            embed.AddField("Characters", gameText);
+
+            await ReplyAsync(embed: embed.Build());
+        }
+
+        [Command("character"), Summary("Display info about the specified character.")]
+        public async Task Character([Remainder] string input = null)
+        {
+            SBPS.Character character;
+            if (input == null)
+                character = SBPS.Character.GetRandom();
+            else 
+                character = SBPS.Character.Search(input);
+
+            EmbedBuilder embed = new EmbedBuilder
+            {
+                Title = character.GetName(),
+                Description = character.GetBlurb(),
+                Color = character.GetColour()
+            };
+
+            double range = character.GetRange();
+            string sRange = range < 0 ? "short" : "far";
+            if (Math.Abs(range) > .5) sRange = "very " + sRange;
+
+            double weight = character.GetWeight();
+            string sWeight = weight < 0 ? "light" : "heavy";
+            if (Math.Abs(weight) > .5) sWeight = "very " + sWeight;
+
+            double power = character.GetPower();
+            string sPower = power < 0 ? "weak" : "strong";
+            if (Math.Abs(power) > .5) sPower = "very " + sPower;
+
+            double speed = character.GetSpeed();
+            string sSpeed = speed < 0 ? "slow" : "fast";
+            if (Math.Abs(speed) > .5) sSpeed = "very " + sSpeed;
+
+            double wepSize = character.GetWeaponLength();
+            string sWep = wepSize < 0 ? wepSize < -0.5 ? "none" : "short" : "long";
+            if (Math.Abs(wepSize) > .5) sWep = "very " + sWep;
+
+            double sexy = character.GetSexiness();
+            string sSexy = sexy < 0 ? "ugly" : "sexy";
+            if (Math.Abs(sexy) > .5) sSexy = "very " + sSexy;
+
+            double style = character.GetStyle();
+            string sStyle = style < 0 ? "lame" : "stylish";
+            if (Math.Abs(style) > .5) sStyle = "very " + sStyle;
+
+            embed.AddField("Series", character.GetSeries().GetName());
+
+            embed.AddField("Range", sRange, true);
+            embed.AddField("Weight", sWeight, true);
+            embed.AddField("Power", sPower, true);
+            embed.AddField("Speed", sSpeed, true);
+            embed.AddField("Weapon Size", sWep, true);
+            embed.AddField("Sexiness", sSexy, true);
+            embed.AddField("Style", sStyle, true);
+
+            await ReplyAsync(embed: embed.Build());
+        }
         
     }
 
