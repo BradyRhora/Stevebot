@@ -28,6 +28,11 @@ namespace SuperBlastPals
                 return SetDBValue<T>("Tournaments", column, value);
             }
 
+            public Tournament(int id)
+            {
+                ID = id;
+            }
+
             public Tournament()
             {
                 GenerateName();

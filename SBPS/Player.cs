@@ -10,12 +10,60 @@ namespace SuperBlastPals
     {
         public class Player : IDataBaseObject
         {
+            public string Name {get;}
+            public string Tag {get;}
+            public double Weight {get;}
+            public double Charm {get;}
+            public double Anger {get;}
+            public double Depression {get;}
+            public double Highness {get;}
+            public double Coordination {get;}
+            public double Intelligence {get;}
+            public double Tech_Knowledge {get;}
+            public double Stink {get;}
+            public Character Main {get;}
+            public Character? Secondary {get;}
+            public int Finger_Count {get;}
 
             public Player(int id, bool bypassCheck = false)
             {
                 ID = id;
                 if (!bypassCheck && GetDBValScalar<int>("ID") == default)
                     ID = -1;
+                else
+                    LoadData();
+            }
+
+            void LoadData() // can we make this less redundant for all SBPS types? (match, character, etc...) 
+            {
+                using (var sql = new SQLiteConnection(Constants.Strings.DB_CONNECTION_STRING))
+                {
+                    sql.Open();
+                    var query = $"SELECT Name,Tag,Main_ID,Secondary_ID,Weight,Charm,Anger,Depression,Highness,Finger_Count,Coordination,Intelligence,Tech_Knowledge,Stink FROM PLAYERS WHERE ID = $1";
+                    using (var cmd = new SQLiteCommand(query, sql))
+                    {
+                        cmd.Parameters.Add(new SQLiteParameter("$1", ID));
+
+                        var reader = cmd.ExecuteReader();
+                        reader.Read();
+
+                        Name = reader.GetString(0);
+                        Tag = reader.GetString(1);
+                        Main = new Character(reader.GetInt32(2));
+                        Secondary = new Character(reader.GetInt32(3)); //* Null check?
+                        
+                        Weight = reader.GetDouble(4);
+                        Charm = reader.GetDouble(5);
+                        Anger = reader.GetDouble(6);
+                        Depression = reader.GetDouble(7);
+                        Highness = reader.GetDouble(8);
+                        Finger_Count = reader.GetInt32(9);
+                        Coordination = reader.GetDouble(10);
+                        Intelligence = reader.GetDouble(11);
+                        Tech_Knowledge = reader.GetDouble(12);
+                        Stink = reader.GetDouble(13);
+                    }
+                }
             }
 
             public Player(string name, string tag, int mainID, int secID, double weight, double charm, double anger, double depression, double highness, int fingerCount, double coordination, double intelligence, double tech, double stink)
@@ -67,7 +115,7 @@ namespace SuperBlastPals
                 }
             }
 
-            public static string GetName(Player player, int limit = 0)
+            public static string GetBracketName(Player player, int limit = 0)
             {
                 if (player == null) return "[        ]";
                 else
@@ -90,107 +138,43 @@ namespace SuperBlastPals
             {
                 return SetDBValue("Players", column, value);
             }
-            public string GetTag(int limit = 0, bool fillEmpty = true, char fillChar = ' ')
-            {
-                string tag = GetDBValScalar<string>("Tag");
-                if (limit != 0 && tag.Length > limit)
-                    tag = tag.Substring(0, limit - 2) + "..";
-                if (limit != 0 && tag.Length < limit)
-                    for (int i = limit - tag.Length; i > 0; i--) tag += fillChar;
-                return tag;
-            }
-
-            public int GetMainID()
-            {
-                return GetDBValScalar<int>("Main_ID");
-            }
-
-            public Character GetMain()
-            {
-                return new Character(GetMainID());
-            }
-
-            public int GetSecondaryID()
-            {
-                return GetDBValScalar<int>("Secondary_ID");
-            }
-
-            public Character GetSecondary()
-            {
-                return new Character(GetSecondaryID());
-            }
-
-            public double GetWeight()
-            {
-                return GetDBValScalar<double>("Weight");
-            }
-
-            public double GetCharm()
-            {
-                return GetDBValScalar<double>("Charm");
-            }
-
-            public double GetAnger()
-            {
-                return GetDBValScalar<double>("Anger");
-            }
-
-            public double GetDepression()
-            {
-                return GetDBValScalar<double>("Depression");
-            }
-
-            public double GetHighness()
-            {
-                return GetDBValScalar<double>("Highness");
-            }
-
-            public double GetCoordination()
-            {
-                return GetDBValScalar<double>("Coordination");
-            }
-
-            public double GetIntelligence()
-            {
-                return GetDBValScalar<double>("Intelligence");
-            }
-
-            public double GetTechKnowledge()
-            {
-                return GetDBValScalar<double>("Tech_Knowledge");
-            }
-
-            public double GetStink()
-            {
-                return GetDBValScalar<double>("Stink");
-            }
-
-            public int GetFinger_Count()
-            {
-                return GetDBValScalar<int>("Finger_Count");
-            }
 
             public override T GetDBValScalar<T>(string name)
             {
                 return GetDBValScalar<T>("Players", name);
             }
 
-            public static Player[] GetAll()
+            public static Player[] GetAll() //********************** test me
             {
                 List<Player> chars = new List<Player>();
                 using (var sql = new SQLiteConnection(Constants.Strings.DB_CONNECTION_STRING))
                 {
                     sql.Open();
-                    var query = "SELECT ID FROM Players;";
+                    var query = $"SELECT Name,Tag,Main_ID,Secondary_ID,Weight,Charm,Anger,Depression,Highness,Finger_Count,Coordination,Intelligence,Tech_Knowledge,Stink FROM PLAYERS";
                     using (var cmd = new SQLiteCommand(query, sql))
                     {
+
                         var reader = cmd.ExecuteReader();
                         while (reader.Read())
-                        {
-                            chars.Add(new Player(reader.GetInt32(0), true));
-                        }
+
+                        Name = reader.GetString(0);
+                        Tag = reader.GetString(1);
+                        Main = new Character(reader.GetInt32(2));
+                        Secondary = new Character(reader.GetInt32(3)); //* Null check?
+                        
+                        Weight = reader.GetDouble(4);
+                        Charm = reader.GetDouble(5);
+                        Anger = reader.GetDouble(6);
+                        Depression = reader.GetDouble(7);
+                        Highness = reader.GetDouble(8);
+                        Finger_Count = reader.GetInt32(9);
+                        Coordination = reader.GetDouble(10);
+                        Intelligence = reader.GetDouble(11);
+                        Tech_Knowledge = reader.GetDouble(12);
+                        Stink = reader.GetDouble(13);
                     }
                 }
+            
                 return chars.ToArray();
             }
 

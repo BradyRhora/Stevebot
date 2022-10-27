@@ -9,7 +9,7 @@ namespace SuperBlastPals
     partial class SBPS
     {
        
-        public class Match
+        public class Match : IDataBaseObject
         {
             int PointsA = 0;
             int PointsB = 0;
