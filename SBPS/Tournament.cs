@@ -1,6 +1,8 @@
 using System;
+using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
 
 namespace SuperBlastPals
 {
@@ -12,7 +14,7 @@ namespace SuperBlastPals
             public int Rounds;
             List<Match> Matches = new List<Match>();
             public static Tournament Current = null;
-
+            public string Name {get;}
             //string tourney name? three word generation, prefix - main - suffix (suffix optional (50%?))
             //string location?
 
@@ -28,6 +30,7 @@ namespace SuperBlastPals
 
             public Tournament()
             {
+                GenerateName();
                 GenerateMatches(Player.GetAllShuffled());
             }
 
@@ -37,6 +40,30 @@ namespace SuperBlastPals
                 {
                     match.Update();
                 }
+            }
+
+            public const int POST_CHANCE = 50;
+            string GenerateName()
+            {
+                var contents = File.ReadAllLines("Files/tourney_words.txt");
+                string[] pres = contents[0].Split(',');
+                string[] mains = contents[1].Split(',');
+                string[] posts = contents[2].Split(',');
+                
+                string pre = pres[Bot.rdm.Next(pres.Count())];
+                string main = mains[Bot.rdm.Next(mains.Count())];
+                string post = posts[Bot.rdm.Next(posts.Count())];
+
+                int mode = Bot.rdm.Next(100);
+                Name = pre;
+                if (mode < 25) Name += " " + main;
+                else if (mode < 50) Name += " " + post;
+                else Name += " " + main + " " + post;
+
+                //if (Regex.) //replace [keys] with their dynamic value
+                // ALWAYS pre, sometimes main, sometimes post, sometimes both, NEVER neither
+
+                return Name;
             }
 
             void GenerateMatches(Player[] ps)
