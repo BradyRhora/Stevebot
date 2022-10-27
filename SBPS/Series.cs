@@ -1,4 +1,15 @@
-public class Series : IDataBaseObject
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Data.SQLite;
+using Stevebot;
+
+namespace SuperBlastPals
+{
+    partial class SBPS
+    {
+
+        public class Series : IDataBaseObject
         {
             public Series(int id)
             {
@@ -14,10 +25,10 @@ public class Series : IDataBaseObject
                     sql.Open();
                     var query =
                         @"INSERT INTO Series(
-                            Name,Release_Year,Genre
-                        ) VALUES (
-                            $1,$2,$3
-                        )";
+                    Name,Release_Year,Genre
+                ) VALUES (
+                    $1,$2,$3
+                )";
 
                     int rows = 0;
                     using (var cmd = new SQLiteCommand(query, sql))
@@ -106,9 +117,11 @@ public class Series : IDataBaseObject
                         var reader = cmd.ExecuteReader();
                         while (reader.Read())
                             chars.Add(new Character(reader.GetInt32(0)));
-                        
+
                     }
                 }
                 return chars.ToArray();
             }
         }
+    }
+}

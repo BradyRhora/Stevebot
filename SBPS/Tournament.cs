@@ -1,5 +1,12 @@
-namespace SBPS{
-    public class Tournament : IDataBaseObject
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace SuperBlastPals
+{
+    partial class SBPS
+    {
+        public class Tournament : IDataBaseObject
         {
             int MatchCount;
             public int Rounds;
@@ -26,7 +33,8 @@ namespace SBPS{
 
             public void Update()
             {
-                foreach(var match in Matches){
+                foreach (var match in Matches)
+                {
                     match.Update();
                 }
             }
@@ -69,8 +77,8 @@ namespace SBPS{
             {
                 for (int i = 0; i < MatchCount; i++)
                 {
-                    Matches[i].GivePoint(true);
-                    Matches[i].GivePoint(true);
+                    Matches[i].GivePoint(Match.PlayerIdentifier.A);
+                    Matches[i].GivePoint(Match.PlayerIdentifier.A);
                 }
             }
 
@@ -159,5 +167,5 @@ namespace SBPS{
                 return stream;
             }*/
         }
-
+    }
 }

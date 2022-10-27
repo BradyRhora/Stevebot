@@ -64,11 +64,16 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
-    <Compile Include="SBPS.cs" />
+    <Compile Include="SBPS\Character.cs" />
+    <Compile Include="SBPS\Match.cs" />
+    <Compile Include="SBPS\Player.cs" />
+    <Compile Include="SBPS\SBPS.cs" />
+    <Compile Include="SBPS\Series.cs" />
+    <Compile Include="SBPS\Tournament.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="bin\Debug\bottoken" />
+    <None Include="bin\Debug\Files\bottoken" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -101,7 +106,10 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="bin\Debug\openaitoken" />
+    <None Include="bin\Debug\Files\openaitoken" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="bin\Debug\Files\tourney_words.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

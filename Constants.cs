@@ -31,6 +31,7 @@ namespace Stevebot
         {
             public static ulong BB_HALO_REACH_FRIENDS = 234882379880071168;
             public static ulong BB_GENERAL = 195670713183633408;
+            public static ulong SBPS_TESTING = 1034949589477892116;
         }
 
         public class Strings

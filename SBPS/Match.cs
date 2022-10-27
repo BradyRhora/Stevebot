@@ -1,4 +1,14 @@
-namespace SBPS{
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Data.SQLite;
+using Stevebot;
+
+namespace SuperBlastPals
+{
+    partial class SBPS
+    {
+       
         public class Match
         {
             int PointsA = 0;
@@ -55,15 +65,15 @@ namespace SBPS{
 
             public void GivePoint(PlayerIdentifier p)
             {
-                if (A)
+                if (p == PlayerIdentifier.A)
                 {
                     PointsA++;
-                    if (PointsA == 2) Win(A);
+                    if (PointsA == 2) Win(PlayerIdentifier.A);
                 }
                 else
                 {
                     PointsB++;
-                    if (PointsB == 2) Win(A);
+                    if (PointsB == 2) Win(PlayerIdentifier.B);
                 }
             }
 
@@ -124,51 +134,6 @@ namespace SBPS{
                 return str;
             }
 
-            
-            public void Draw(Graphics graphics, Pen pen, Point pos)
-            {
-                int charLength = 13;
-                Font font = new Font(FontFamily.GenericMonospace, Tournament.DRAW_SPACING);
-                string nameA = Player.GetName(PlayerA);
-                string nameB = Player.GetName(PlayerB);
-
-                PointF topRight = new PointF(pos.X + 175, pos.Y + (Tournament.DRAW_SPACING * 0.7f));
-                PointF topLeft = new PointF(pos.X + (charLength * nameA.Length) + 10, pos.Y + (Tournament.DRAW_SPACING * 0.7f));
-                int yMod = GetRound();
-                PointF bottomRight = new PointF(pos.X + 175, (pos.Y + (Tournament.DRAW_SPACING * 1.7f)) * yMod);
-                PointF bottomLeft = new PointF(pos.X + (charLength * nameB.Length) + 10, (pos.Y + (Tournament.DRAW_SPACING * 1.7f)) * yMod);
-
-                // ############################ Draw Self ###############################
-
-                if (PlayerA != null)pen.Color = new Character(PlayerA.GetMainID()).GetColour();
-                else pen.Color = Color.White;
-                graphics.DrawString(nameA, font, pen.Brush, pos.X, pos.Y);
-                graphics.DrawLine(pen, topLeft , topRight);
-
-                pen.Color = Color.White;
-                graphics.DrawLine(pen, topRight, bottomRight); // vertical line
-
-                float midY = pos.Y + Tournament.DRAW_SPACING * 1.1f;
-                graphics.DrawLine(pen, pos.X + 175, midY, pos.X + 200, midY); // middle horizontal
-
-                if (PlayerB != null) pen.Color = new Character(PlayerB.GetMainID()).GetColour();
-                else pen.Color = Color.White;
-                graphics.DrawString(nameB, font, pen.Brush, pos.X, pos.Y + (Tournament.DRAW_SPACING * GetRound()));
-                graphics.DrawLine(pen, bottomLeft, bottomRight);
-                // ######################################################################
-
-                if (NextMatch!=null && NextMatch.PrevMatchA == this)
-                    NextMatch.Draw(graphics, pen, new Point(pos.X + 175 + 20, pos.Y + (Tournament.DRAW_SPACING / 2)));
-                
-                /* ############################ Draw Next ############################### //
-                
-                string nextName = Player.GetName(NextMatch.PlayerA);
-                graphics.DrawString(nextName, font, pen.Brush, pos.X + 175 + 20, pos.Y + (Tournament.DRAW_SPACING / 2));
-                graphics.DrawLine(pen, pos.X + 175 + 20 + (charLength * nextName.Length) + 10, midDist, pos.X + 375, midDist);
-
-
-                /* ###################################################################### */
-            }
 
             public int DistanceToBottom(PlayerIdentifier p)
             {
@@ -194,13 +159,13 @@ namespace SBPS{
 
             public int GetRound()
             {
-                return Math.Max(DistanceToBottom(), DistanceToBottom(false)) + 1;
+                return Math.Max(DistanceToBottom(PlayerIdentifier.A), DistanceToBottom(PlayerIdentifier.B)) + 1;
             }
 
-            enum PlayerIdentifier{
+            public enum PlayerIdentifier {
                 A,
                 B
             }
         }
-
+    }
 }

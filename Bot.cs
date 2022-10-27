@@ -11,6 +11,8 @@ using System.IO;
 using System.Reflection;
 using OpenAI_API;
 using Pastel;
+using SuperBlastPals;
+
 //using Windows.Media.SpeechRecognition;
 
 namespace Stevebot
@@ -55,16 +57,16 @@ namespace Stevebot
                 Console.WriteLine("Command Service Initialized.");
                 await InstallCommands();
                 Console.WriteLine("Commands Installed, logging in...");
-                if (!File.Exists("bottoken"))
+                if (!File.Exists("Files/bottoken"))
                 {
-                    File.WriteAllText("bottoken", "");
+                    File.WriteAllText("Files/bottoken", "");
                     Console.WriteLine("Created bottoken file, you will need to put the token in this file.");
                 }
-                await client.LoginAsync(TokenType.Bot, File.ReadAllText("bottoken"));
+                await client.LoginAsync(TokenType.Bot, File.ReadAllText("Files/bottoken"));
 
                 Console.WriteLine("Successfully logged in! Connecting to OpenAI API...");
                 Engine td2 = new Engine("text-davinci-002");
-                openapi = new OpenAI_API.OpenAIAPI(new APIAuthentication(File.ReadAllText("openaitoken")), engine: td2);
+                openapi = new OpenAI_API.OpenAIAPI(new APIAuthentication(File.ReadAllText("Files/openaitoken")), engine: td2);
 
                 await client.StartAsync();
                 Console.WriteLine($"Connected.\nBot successfully initialized.");
@@ -107,10 +109,7 @@ namespace Stevebot
 
         public static void SBPSUpdate(object sender, System.Timers.ElapsedEventArgs e)
         {
-            if (SBPS.isInit())
-            {
-                SBPS.Update();
-            }
+            SBPS.Update();
         }
 
         const int LISTEN_CHANCE = 5; //%

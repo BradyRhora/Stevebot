@@ -1,28 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-//using Discord;
 using System.Data.SQLite;
-using System.Drawing;
-using System.IO;
-// sort out usings
+using Stevebot;
 
-namespace SBPS
+namespace SuperBlastPals
 {
-    
-        static ulong Channel_ID = 0;
-        public static void Initialize(ulong channel_id)
-        {
-            Channel_ID = channel_id;
-        }
-
-        public static bool isInit()
-        {
-            return Channel_ID != 0;
-        }
-
+    partial class SBPS
+    {
         public static void Update()
         {
             if (Tournament.Current == null)
@@ -33,7 +18,6 @@ namespace SBPS
             Tournament.Current.Update();
         }
 
-        
         public abstract class IDataBaseObject
         {
             public int ID;
@@ -54,7 +38,7 @@ namespace SBPS
                     }
                 }
 
-                if (EqualityComparer<T>.Default.Equals(value,default))
+                if (EqualityComparer<T>.Default.Equals(value, default))
                 {
                     Console.WriteLine($"DB Result {table} {name} {ID} Not found!");
                 }
@@ -85,7 +69,7 @@ namespace SBPS
             public string GetName()
             {
                 string table = GetTableName();
-                return GetDBValScalar<string>(table,"Name");
+                return GetDBValScalar<string>(table, "Name");
             }
 
             public static string GetTableName(Type T)
@@ -116,5 +100,5 @@ namespace SBPS
                 return SetDBValue<T>("Teams", column, value);
             }
         }
-    
+    }
 }

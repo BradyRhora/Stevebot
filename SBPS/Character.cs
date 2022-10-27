@@ -1,6 +1,13 @@
-namespace SBPS
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Data.SQLite;
+using Stevebot;
+
+namespace SuperBlastPals
 {
-    public class Character : IDataBaseObject
+    partial class SBPS {
+        public class Character : IDataBaseObject
         {
 
             // Gets Character with id from database
@@ -19,10 +26,10 @@ namespace SBPS
                     sql.Open();
                     var query =
                         @"INSERT INTO Characters(
-                            Name,Range,Weight,Power,Speed,Weapon_Size,Sex_Appeal,Style,Colour_Hex,Blurb,Series_ID
-                        ) VALUES (
-                            $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11
-                        )";
+                        Name,Range,Weight,Power,Speed,Weapon_Size,Sex_Appeal,Style,Colour_Hex,Blurb,Series_ID
+                    ) VALUES (
+                        $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11
+                    )";
 
                     int rows = 0;
                     using (var cmd = new SQLiteCommand(query, sql))
@@ -68,7 +75,6 @@ namespace SBPS
             {
                 return GetDBValScalar<string>("Blurb");
             }
-
             public double GetPower()
             {
                 return GetDBValScalar<double>("Power");
@@ -77,7 +83,6 @@ namespace SBPS
             {
                 return GetDBValScalar<double>("Speed");
             }
-
             public double GetRange()
             {
                 return GetDBValScalar<double>("Range");
@@ -86,7 +91,6 @@ namespace SBPS
             {
                 return GetDBValScalar<double>("Weight");
             }
-
             public double GetWeaponLength()
             {
                 return GetDBValScalar<double>("Weapon_Size");
@@ -102,7 +106,7 @@ namespace SBPS
 
             public Discord.Color GetColour()
             {
-                var  c = System.Drawing.ColorTranslator.FromHtml(GetDBValScalar<string>("Colour_Hex"));
+                var c = System.Drawing.ColorTranslator.FromHtml(GetDBValScalar<string>("Colour_Hex"));
                 return new Discord.Color(c.R, c.G, c.B);
             }
 
@@ -129,7 +133,6 @@ namespace SBPS
                     }
                 }
             }
-
             public static Character GetRandom()
             {
                 using (var sql = new SQLiteConnection(Constants.Strings.DB_CONNECTION_STRING))
@@ -143,7 +146,6 @@ namespace SBPS
                     }
                 }
             }
-
             public static Character[] GetAll()
             {
                 List<Character> chars = new List<Character>();
@@ -156,11 +158,12 @@ namespace SBPS
                         var reader = cmd.ExecuteReader();
                         while (reader.Read())
                         {
-                            chars.Add(new Character(reader.GetInt32(0),true));
+                            chars.Add(new Character(reader.GetInt32(0), true));
                         }
                     }
                 }
                 return chars.ToArray();
             }
-        }
+        }  
+    }
 }
