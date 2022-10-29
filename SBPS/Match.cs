@@ -9,7 +9,7 @@ namespace SuperBlastPals
     partial class SBPS
     {
        
-        public class Match : IDataBaseObject
+        public class Match : IDataBaseObject // probably missing overrides
         {
             int PointsA = 0;
             int PointsB = 0;
@@ -46,6 +46,11 @@ namespace SuperBlastPals
             {
                 if (PlayerA != null && PlayerB != null)
                 {
+                    int aPoints = 0;
+                    int bPoints = 0;
+
+                    
+
                     //choose stage?? should i make stages??????
                     /*
                         ok wait seriously how are we gonna do this
