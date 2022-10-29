@@ -20,6 +20,16 @@ namespace SuperBlastPals
             public Match PrevMatchB;
             public Tournament Tournament;
 
+            public override T GetDBValScalar<T>(string name)
+            {
+                return GetDBValScalar<T>("Matches", name);
+            }
+
+            public override bool SetDBValue<T>(string column, T value)
+            {
+                return SetDBValue("Matches", column, value);
+            }
+
             public Match(Player a, Player b, Tournament tournament)
             {
                 PlayerA = a;

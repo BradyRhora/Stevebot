@@ -10,20 +10,21 @@ namespace SuperBlastPals
     {
         public class Player : IDataBaseObject
         {
-            public string Name {get;}
-            public string Tag {get;}
-            public double Weight {get;}
-            public double Charm {get;}
-            public double Anger {get;}
-            public double Depression {get;}
-            public double Highness {get;}
-            public double Coordination {get;}
-            public double Intelligence {get;}
-            public double Tech_Knowledge {get;}
-            public double Stink {get;}
-            public Character Main {get;}
-            public Character? Secondary {get;}
-            public int Finger_Count {get;}
+            public string Name {get; set; }
+            public string Tag {get; set; }
+            public double Weight {get; set; }
+            public double Charm {get; set; }
+            public double Anger {get; set; }
+            public double Depression {get; set; }
+            public double Highness {get; set; }
+            public double Coordination {get; set; }
+            public double Intelligence {get; set; }
+            public double Tech_Knowledge {get; set; }
+            public double Stink {get; set; }
+            public Character Main {get; set; }
+            public Character Secondary {get; set; }
+            public int Finger_Count { get; set; }
+            public int Team_ID { get; set; }
 
             public Player(int id, bool bypassCheck = false)
             {
@@ -131,7 +132,7 @@ namespace SuperBlastPals
             {
                 string ret = "";
                 //if () get team abbr
-                ret += GetTag();
+                ret += Tag;
                 return ret;
             }
             public override bool SetDBValue<T>(string column, T value)
@@ -144,38 +145,52 @@ namespace SuperBlastPals
                 return GetDBValScalar<T>("Players", name);
             }
 
+            public string GetTag(int limit = 0, bool fillEmpty = true, char fillChar = ' ')
+            {
+                string tag = GetDBValScalar<string>("Tag");
+                if (limit != 0 && tag.Length > limit)
+                    tag = tag.Substring(0, limit - 2) + "..";
+                if (limit != 0 && tag.Length < limit)
+                    for (int i = limit - tag.Length; i > 0; i--) tag += fillChar;
+                return tag;
+            }
+
             public static Player[] GetAll() //********************** test me
             {
-                List<Player> chars = new List<Player>();
+                List<Player> players = new List<Player>();
                 using (var sql = new SQLiteConnection(Constants.Strings.DB_CONNECTION_STRING))
                 {
                     sql.Open();
-                    var query = $"SELECT Name,Tag,Main_ID,Secondary_ID,Weight,Charm,Anger,Depression,Highness,Finger_Count,Coordination,Intelligence,Tech_Knowledge,Stink FROM PLAYERS";
+                    var query = $"SELECT ID,Name,Tag,Main_ID,Secondary_ID,Weight,Charm,Anger,Depression,Highness,Finger_Count,Coordination,Intelligence,Tech_Knowledge,Stink,Team_ID FROM PLAYERS";
                     using (var cmd = new SQLiteCommand(query, sql))
                     {
 
                         var reader = cmd.ExecuteReader();
                         while (reader.Read())
+                        {
+                            Player p = new Player(reader.GetInt32(0));
+                            p.Name = reader.GetString(1);
+                            p.Tag = reader.GetString(2);
+                            p.Main = new Character(reader.GetInt32(3));
+                            p.Secondary = new Character(reader.GetInt32(4)); //* Null check?
 
-                        Name = reader.GetString(0);
-                        Tag = reader.GetString(1);
-                        Main = new Character(reader.GetInt32(2));
-                        Secondary = new Character(reader.GetInt32(3)); //* Null check?
-                        
-                        Weight = reader.GetDouble(4);
-                        Charm = reader.GetDouble(5);
-                        Anger = reader.GetDouble(6);
-                        Depression = reader.GetDouble(7);
-                        Highness = reader.GetDouble(8);
-                        Finger_Count = reader.GetInt32(9);
-                        Coordination = reader.GetDouble(10);
-                        Intelligence = reader.GetDouble(11);
-                        Tech_Knowledge = reader.GetDouble(12);
-                        Stink = reader.GetDouble(13);
+                            p.Weight = reader.GetDouble(5);
+                            p.Charm = reader.GetDouble(6);
+                            p.Anger = reader.GetDouble(7);
+                            p.Depression = reader.GetDouble(8);
+                            p.Highness = reader.GetDouble(9);
+                            p.Finger_Count = reader.GetInt32(10);
+                            p.Coordination = reader.GetDouble(11);
+                            p.Intelligence = reader.GetDouble(12);
+                            p.Tech_Knowledge = reader.GetDouble(13);
+                            p.Stink = reader.GetDouble(14);
+                            p.Team_ID = reader.GetInt32(15);
+                            players.Add(p);
+                        }
                     }
                 }
             
-                return chars.ToArray();
+                return players.ToArray();
             }
 
             public static Player[] GetAllShuffled()

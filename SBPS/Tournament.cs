@@ -3,6 +3,7 @@ using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
+using Stevebot;
 
 namespace SuperBlastPals
 {
@@ -14,8 +15,7 @@ namespace SuperBlastPals
             public int Rounds;
             List<Match> Matches = new List<Match>();
             public static Tournament Current = null;
-            public string Name {get;}
-            //string tourney name? three word generation, prefix - main - suffix (suffix optional (50%?))
+            public string Name { get; set; }
             //string location?
 
             public override T GetDBValScalar<T>(string name)
@@ -66,7 +66,6 @@ namespace SuperBlastPals
                 else Name += " " + main + " " + post;
 
                 //if (Regex.) //replace [keys] with their dynamic value
-                // ALWAYS pre, sometimes main, sometimes post, sometimes both, NEVER neither
 
                 return Name;
             }
