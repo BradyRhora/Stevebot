@@ -28,7 +28,7 @@ namespace Stevebot
         public static OpenAIAPI openapi;
 
         public const char COMMAND_PREFIX = '>';
-        //public static System.Timers.Timer sbpsTimer;
+        public static System.Timers.Timer sbpsTimer;
         public static System.Timers.Timer chatTimer;
         public async Task Run()
         {
@@ -71,10 +71,14 @@ namespace Stevebot
                 await client.StartAsync();
                 Console.WriteLine($"Connected.\nBot successfully initialized.");
 
-                /*/BuildSBPS();
-                Console.WriteLine("Activating SBPS Update Timer..");
-                sbpsTimer = new System.Timers.Timer(1000 * 60);
-                sbpsTimer.Elapsed += new System.Timers.ElapsedEventHandler(SBPSUpdate);*/
+                //BuildSBPS();
+                //Console.WriteLine("Activating SBPS Update Timer..");
+                //sbpsTimer = new System.Timers.Timer(1000 * 60);
+                //sbpsTimer.Elapsed += new System.Timers.ElapsedEventHandler(SBPSUpdate);
+                //sbpsTimer.Start();
+
+                //SBPSUpdate(null, null);
+
                 chatTimer = new System.Timers.Timer(1000 * 60);
                 chatTimer.Elapsed += new System.Timers.ElapsedEventHandler(Chat.ChatTimerCallBack);
                 chatTimer.Start();
@@ -155,9 +159,9 @@ namespace Stevebot
                     Console.WriteLine(e.Message);
                 }
             }
-            else if (Chat.Chats.Where(x => x.channel_id == message.Channel.Id).Count() != 0)
+            else if (Chat.Chats.Where(x => x.ChannelID == message.Channel.Id).Count() != 0)
             {
-                Chat chat = Chat.Chats.Where(x => x.channel_id == message.Channel.Id).FirstOrDefault();
+                Chat chat = Chat.Chats.Where(x => x.ChannelID == message.Channel.Id).FirstOrDefault();
                 if (chat != null)
                 {
                     chat.Join(message.Author);
@@ -212,12 +216,12 @@ namespace Stevebot
                     var gUser = (message.Channel as SocketGuildChannel).GetUser(client.CurrentUser.Id);
                     await gUser.ModifyAsync(x => x.Nickname = gUser.DisplayName + Constants.Emotes.EAR.Name);
                     Console.WriteLine("[DEBUG] I want to join the chat..");
-                    Stevebot.Chat chat = new Stevebot.Chat(message.Author.Id, message.Channel.Id, true);
+                    Stevebot.Chat chat = new Chat(message.Author.Id, message.Channel.Id, listening:true);
                 }                
             }
         }
 
-        /*async void BuildSBPS()
+        async void BuildSBPS()
         {
             /* SERIES GENERATOR   
             Console.WriteLine("Building SBPS Series...");
@@ -234,7 +238,7 @@ namespace Stevebot
             }*/
 
 
-            /* CHARACTER GENERATOR
+            // CHARACTER GENERATOR
             Console.WriteLine("Building SBPS Characters...");
             int charCount = rdm.Next(30, 40);
             for (int i = 0; i < charCount; i++)
@@ -281,7 +285,7 @@ namespace Stevebot
                     var character = new SBPS.Character(name, range, weight, power, speed, wepSize, sexy, style, color, blurb, series.ID);
                 }
                 else i--;
-            }*/
+            }
 
             //colour fix (disgusting)
             /*
@@ -340,7 +344,7 @@ namespace Stevebot
                     string hex = System.Drawing.ColorTranslator.ToHtml(new Color(r, g, b));
                     c.SetDBValue<string>("colour_hex", hex);
                 }
-            }*/
+            }
 
             /*
             Console.WriteLine("Building SBPS Players...");
@@ -413,7 +417,7 @@ namespace Stevebot
             var channel = await client.GetChannelAsync(Constants.Channels.HALO_REACH_FRIENDS) as ITextChannel;
             var bracket = t.BuildChart();
             await channel.SendMessageAsync("```"+bracket+"```");
-            //await channel.SendMessageAsync("```"+ bracket + "```");
-        }*/
+            //await channel.SendMessageAsync("```"+ bracket + "```");*/
+        }
     }
 }

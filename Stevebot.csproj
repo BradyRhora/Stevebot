@@ -53,6 +53,8 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BMS\BMS.cs" />
+    <Compile Include="BMS\Character.cs" />
     <Compile Include="Bot.cs" />
     <Compile Include="Chat.cs" />
     <Compile Include="Commands.cs" />
@@ -80,11 +82,17 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Betalgo.OpenAI.GPT3">
+      <Version>6.8.3</Version>
+    </PackageReference>
     <PackageReference Include="Discord.Net">
       <Version>3.7.2</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Windows.SDK.Contracts">
       <Version>10.0.22621.2</Version>
+    </PackageReference>
+    <PackageReference Include="MySql.Data">
+      <Version>8.0.32.1</Version>
     </PackageReference>
     <PackageReference Include="OpenAI">
       <Version>1.2.0</Version>
@@ -109,6 +117,7 @@
     <None Include="bin\Debug\Files\openaitoken" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="bin\Debug\Files\bmsdb_pwd" />
     <Content Include="bin\Debug\Files\tourney_words.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

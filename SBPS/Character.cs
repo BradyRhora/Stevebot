@@ -9,14 +9,56 @@ namespace SuperBlastPals
     partial class SBPS {
         public class Character : IDataBaseObject
         {
+            public string Blurb { get; private set; }
+            public float Power { get; private set; }
+            public float Speed { get; private set; }
+            public float Weight { get; private set; }
+            public float Range { get; private set; }
+            public float Weapon_Length { get; private set; }
+            public float Sexiness { get; private set; }
+            public float Style { get; private set; }
+
+            public int SeriesID { get; private set; }
+            public Discord.Color Colour { get; private set; }
 
             // Gets Character with id from database
             public Character(int id, bool bypassCheck = false)
             {
                 ID = id;
-                if (!bypassCheck)
-                    if (GetDBValScalar<int>("ID") == default)
-                        ID = -1;
+                if (!bypassCheck && GetDBValScalar<int>("ID") == default)
+                    ID = -1;
+                else
+                    LoadData();
+            }
+
+            void LoadData() 
+            {
+                using (var sql = new SQLiteConnection(Constants.Strings.DB_CONNECTION_STRING))
+                {
+                    sql.Open();
+                    var query = $"SELECT name,range,weight,power,speed,weapon_size,sex_appeal,style,colour_hex,blurb,series_id FROM Characters WHERE ID = $1";
+                    using (var cmd = new SQLiteCommand(query, sql))
+                    {
+                        cmd.Parameters.Add(new SQLiteParameter("$1", ID));
+
+                        var reader = cmd.ExecuteReader();
+                        reader.Read();
+
+                        Name = reader.GetString(0);
+                        Range = reader.GetFloat(1);
+                        Weight = reader.GetFloat(2);
+                        Power = reader.GetFloat(3);
+                        Speed = reader.GetFloat(4);
+                        Weapon_Length = reader.GetFloat(5);
+                        Sexiness = reader.GetFloat(6);
+                        Style = reader.GetFloat(7);
+
+                        var c = System.Drawing.ColorTranslator.FromHtml(reader.GetString(8));
+                        Colour = new Discord.Color(c.R, c.G, c.B);
+                        Blurb = reader.GetString(9);
+                        SeriesID = reader.GetInt32(10);
+                    }
+                }
             }
 
             public Character(string name, double range, double weight, double power, double speed, double weapon_size, double sex_appeal, double style, System.Drawing.Color color, string blurb, int seriesID)
@@ -71,52 +113,15 @@ namespace SuperBlastPals
                 return SetDBValue<T>("Characters", column, value);
             }
 
-            public string GetBlurb()
-            {
-                return GetDBValScalar<string>("Blurb");
-            }
-            public double GetPower()
-            {
-                return GetDBValScalar<double>("Power");
-            }
-            public double GetSpeed()
-            {
-                return GetDBValScalar<double>("Speed");
-            }
-            public double GetRange()
-            {
-                return GetDBValScalar<double>("Range");
-            }
-            public double GetWeight()
-            {
-                return GetDBValScalar<double>("Weight");
-            }
-            public double GetWeaponLength()
-            {
-                return GetDBValScalar<double>("Weapon_Size");
-            }
-            public double GetSexiness()
-            {
-                return GetDBValScalar<double>("Sex_Appeal");
-            }
-            public double GetStyle()
-            {
-                return GetDBValScalar<double>("Style");
-            }
-
             public Discord.Color GetColour()
             {
                 var c = System.Drawing.ColorTranslator.FromHtml(GetDBValScalar<string>("Colour_Hex"));
                 return new Discord.Color(c.R, c.G, c.B);
             }
 
-            public int GetSeriesID()
-            {
-                return GetDBValScalar<int>("Series_ID");
-            }
             public Series GetSeries()
             {
-                return new Series(GetSeriesID());
+                return new Series(SeriesID);
             }
 
             public static Character Search(string name)

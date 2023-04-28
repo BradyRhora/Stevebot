@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using Stevebot;
+using System.Drawing;
 
 namespace SuperBlastPals
 {
@@ -37,6 +38,10 @@ namespace SuperBlastPals
             {
                 GenerateName();
                 GenerateMatches(Player.GetAllShuffled());
+                TEMP_UPDATE_METHOD();
+                //TEMP_UPDATE_METHOD();
+                Announce(image:NewChart());
+                //Announce("```" +BuildChart() + "```");
             }
 
             public void Update()
@@ -65,20 +70,34 @@ namespace SuperBlastPals
                 else if (mode < 50) Name += " " + post;
                 else Name += " " + main + " " + post;
 
-                //if (Regex.) //replace [keys] with their dynamic value
+                var match = Regex.Match(Name, "\\[(.*)\\]");
+                if (match.Success)
+                {
+                    string replacement;
+                    switch (match.Captures[0].Value.Trim('[',']'))
+                    {
+                        case "year":
+                            replacement = DateTime.Now.Year.ToString();
+                            break;
+                        default:
+                            replacement = "";
+                            break;
+                    }
+                    Name = Regex.Replace(Name, "\\[(.*)\\]", replacement);
+                }
 
                 return Name;
             }
 
-            void GenerateMatches(Player[] ps)
+            void GenerateMatches(Player[] entrants)
             {
-                MatchCount = (ps.Length / 2) + ps.Length % 2;
+                MatchCount = (entrants.Length / 2) + entrants.Length % 2;
                 for (int i = 0; i < MatchCount; i++)
                 {
                     Player player2;
-                    if ((i * 2) + 1 >= ps.Length) player2 = null;
-                    else player2 = ps[(i * 2) + 1];
-                    Match m = new Match(ps[i * 2], player2, this);
+                    if ((i * 2) + 1 >= entrants.Length) player2 = null;
+                    else player2 = entrants[(i * 2) + 1];
+                    Match m = new Match(entrants[i * 2], player2, this);
                     Matches.Add(m);
                 }
 
@@ -99,17 +118,17 @@ namespace SuperBlastPals
                     Rounds++;
                 }
 
-                //TEMP_UPDATE_METHOD();
-                //TEMP_PRINT_ALL();
-                //TEMP_INTERACTIVE_BRACKET();
             }
 
             void TEMP_UPDATE_METHOD()
             {
-                for (int i = 0; i < MatchCount; i++)
+                for (int i = Matches.Count() - 1; i >= 0; i--)
                 {
-                    Matches[i].GivePoint(Match.PlayerIdentifier.A);
-                    Matches[i].GivePoint(Match.PlayerIdentifier.A);
+                    if (Matches[i].HasStarted() && !Matches[i].HasFinished())
+                    {
+                        Matches[i].PlayerA.GivePoint();
+                        Matches[i].PlayerA.GivePoint();
+                    }
                 }
             }
 
@@ -127,11 +146,16 @@ namespace SuperBlastPals
             {
                 Match current = Matches[Matches.Count - 1];
                 bool flag = true;
+                bool sv = true;
                 while (flag)
                 {
                     Console.Clear();
                     string br = "";
-                    current.Build(ref br);
+                    if (sv)
+                        current.Build(ref br, GetMinRound());
+                    else
+                        current.Build(ref br);
+
                     Console.WriteLine(br);
                     Console.WriteLine("==================================================");
 
@@ -153,8 +177,8 @@ namespace SuperBlastPals
                     else
                         Console.WriteLine("No Previous Match B");
 
-
-                    Console.Write("4. Quit\n> ");
+                    Console.WriteLine($"4: Toggle Short view [{(sv ? "On" : "Off")}]");
+                    Console.Write("5. Quit\n> ");
                     char c = (char)Console.Read();
                     Console.WriteLine();
                     switch (c)
@@ -169,6 +193,9 @@ namespace SuperBlastPals
                             current = current.PrevMatchB;
                             break;
                         case '4':
+                            sv = !sv;
+                            break;
+                        case '5':
                             flag = false;
                             break;
                     }
@@ -182,7 +209,38 @@ namespace SuperBlastPals
                 return chart;
             }
 
-            public static int DRAW_SPACING = 15;
+            public Bitmap NewChart()
+            {
+                Console.WriteLine(BuildChart());
+                int width = 125 * Rounds;
+                int height = (DRAW_SPACING) * MatchCount;
+                width *= 2;
+                height *= 2;
+                Bitmap bm = new Bitmap(width, height);
+                Graphics g = Graphics.FromImage(bm);
+                Pen pen = new Pen(Color.FromKnownColor(KnownColor.White));
+                Font font = new Font(FontFamily.GenericMonospace, 20);
+                PointF point = new PointF(width-200, height/2);
+
+                var root = Matches[Matches.Count - 1];
+                root.Draw(ref g, pen, font, point);
+
+
+
+
+
+
+
+
+                return bm;
+            }
+
+            public IGrouping<int,Match>[] GetMatchesByRound()
+            {
+                return Matches.GroupBy(x => x.GetRound()).ToArray();
+            }
+
+            public static int DRAW_SPACING = 40;
             /*public Stream DrawChart()
             {
                 Bitmap bitmap = new Bitmap(200 * Rounds, 20 + ((DRAW_SPACING * 3) * MatchCount));
@@ -197,6 +255,14 @@ namespace SuperBlastPals
                 bitmap.Save(stream, System.Drawing.Imaging.ImageFormat.Jpeg);
                 return stream;
             }*/
+
+            public int GetMinRound()
+            {
+                for (int i = 0; i < Matches.Count; i++)
+                    if (!Matches[i].HasFinished()) 
+                        return Matches[i].GetRound();
+                return Rounds;
+            }
         }
     }
 }

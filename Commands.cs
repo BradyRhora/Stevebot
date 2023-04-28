@@ -7,9 +7,15 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using SuperBlastPals;
+using System.IO;
+
+using MySql.Data;
+using MySql.Data.MySqlClient;
+using BradyMS;
 
 namespace Stevebot
 {
+    
     public class Commands : ModuleBase
     {
         Random rdm = new Random();
@@ -80,9 +86,9 @@ namespace Stevebot
                 await ReplyAsync("Okay, I'll remember that.");
 
             }
-            else if (Chat.Chats.Where(x => x.channel_id == Context.Channel.Id).Count() > 0)
+            else if (Chat.Chats.Where(x => x.ChannelID== Context.Channel.Id).Count() > 0)
             {
-                if (input.ToLower() == "end") Chat.Chats.Remove(Chat.Chats.Where(x => x.channel_id == Context.Channel.Id).First());
+                if (input.ToLower() == "end") Chat.Chats.Remove(Chat.Chats.Where(x => x.ChannelID == Context.Channel.Id).First());
                 else await Context.Channel.SendMessageAsync("We're already chatting here.");
             }
             else
@@ -145,37 +151,37 @@ namespace Stevebot
             EmbedBuilder embed = new EmbedBuilder
             {
                 Title = character.GetName(),
-                Description = character.GetBlurb(),
+                Description = character.Blurb,
                 Color = character.GetColour()
             };
 
-            double range = character.GetRange();
-            string sRange = range < 0 ? "short" : "far";
-            if (Math.Abs(range) > .5) sRange = "very " + sRange;
+            double range = character.Range;
+            string sRange = range < 1 ? "short" : "far";
+            if (Math.Abs(range - 1) > .5) sRange = "very " + sRange;
 
-            double weight = character.GetWeight();
-            string sWeight = weight < 0 ? "light" : "heavy";
-            if (Math.Abs(weight) > .5) sWeight = "very " + sWeight;
+            double weight = character.Weight;
+            string sWeight = weight < 1 ? "light" : "heavy";
+            if (Math.Abs(weight - 1) > .5) sWeight = "very " + sWeight;
 
-            double power = character.GetPower();
-            string sPower = power < 0 ? "weak" : "strong";
-            if (Math.Abs(power) > .5) sPower = "very " + sPower;
+            double power = character.Power;
+            string sPower = power < 1 ? "weak" : "strong";
+            if (Math.Abs(power - 1) > .5) sPower = "very " + sPower;
 
-            double speed = character.GetSpeed();
-            string sSpeed = speed < 0 ? "slow" : "fast";
-            if (Math.Abs(speed) > .5) sSpeed = "very " + sSpeed;
+            double speed = character.Speed;
+            string sSpeed = speed < 1 ? "slow" : "fast";
+            if (Math.Abs(speed - 1) > .5) sSpeed = "very " + sSpeed;
 
-            double wepSize = character.GetWeaponLength();
-            string sWep = wepSize < 0 ? wepSize < -0.5 ? "none" : "short" : "long";
-            if (Math.Abs(wepSize) > .5) sWep = "very " + sWep;
+            double wepSize = character.Weapon_Length;
+            string sWep = wepSize < 1 ? wepSize < -0.5 ? "none" : "short" : "long";
+            if (Math.Abs(wepSize - 1) > .5) sWep = "very " + sWep;
 
-            double sexy = character.GetSexiness();
-            string sSexy = sexy < 0 ? "ugly" : "sexy";
-            if (Math.Abs(sexy) > .5) sSexy = "very " + sSexy;
+            double sexy = character.Sexiness;
+            string sSexy = sexy < 1 ? "ugly" : "sexy";
+            if (Math.Abs(sexy - 1) > .5) sSexy = "very " + sSexy;
 
-            double style = character.GetStyle();
-            string sStyle = style < 0 ? "lame" : "stylish";
-            if (Math.Abs(style) > .5) sStyle = "very " + sStyle;
+            double style = character.Style;
+            string sStyle = style < 1 ? "lame" : "stylish";
+            if (Math.Abs(style - 1) > .5) sStyle = "very " + sStyle;
 
             embed.AddField("Series", character.GetSeries().GetName());
 
@@ -199,56 +205,62 @@ namespace Stevebot
             else
                 player = SBPS.Player.Search(input);
 
+            if (player.ID == -1)
+            {
+                await ReplyAsync("Player not found.");
+                return;
+            }
+
             EmbedBuilder embed = new EmbedBuilder
             {
-                Title = player.GetTag(),
-                Description = "Real name: " + player.GetName(),
+                Title = player.Tag,
+                Description = "Real name: " + player.Name,
                 Color = player.GetMain().GetColour()
             };
 
-            double weight = player.GetWeight();
-            string sWeight = weight < 0 ? "light" : "heavy";
-            if (Math.Abs(weight) > .5) sWeight = "very " + sWeight;
+            double weight = player.Weight;
+            string sWeight = weight < 1 ? "light" : "heavy";
+            if (Math.Abs(weight - 1) > .5) sWeight = "very " + sWeight;
 
-            double charm = player.GetCharm();
-            string sCharm = charm < 0 ? "weird" : "charming";
-            if (Math.Abs(charm) > .5) sCharm = "very " + sCharm;
+            double charm = player.Charm;
+            string sCharm = charm < 1 ? "weird" : "charming";
+            if (Math.Abs(charm - 1) > .5) sCharm = "very " + sCharm;
 
-            double anger = player.GetAnger();
-            string sAnger = anger < 0 ? "gentle" : "angry";
-            if (Math.Abs(anger) > .5) sAnger = "very " + sAnger;
+            double anger = player.Anger;
+            string sAnger = anger < 1 ? "gentle" : "angry";
+            if (Math.Abs(anger - 1) > .5) sAnger = "very " + sAnger;
 
-            double depression = player.GetDepression();
-            string sDepress = depression < 0 ? "happy" : "depressed";
-            if (Math.Abs(depression) > .5) sDepress = "very " + sDepress;
+            double depression = player.Depression;
+            string sDepress = depression < 1 ? "happy" : "depressed";
+            if (Math.Abs(depression - 1) > .5) sDepress = "very " + sDepress;
 
-            double highness = player.GetHighness();
-            string sHigh = highness < 0 ? "sober" : "blazed";
-            if (Math.Abs(highness) > .5) sHigh = "very " + sHigh;
+            double highness = player.Highness;
+            string sHigh = highness < 1 ? "sober" : "blazed";
+            if (Math.Abs(highness - 1) > .5) sHigh = "very " + sHigh;
 
-            double coordination = player.GetCoordination();
-            string sCoordination = coordination < 0 ? "clumsy" : "coordinated";
-            if (Math.Abs(coordination) > .5) sCoordination = "very " + sCoordination;
+            double coordination = player.Coordination;
+            string sCoordination = coordination < 1 ? "clumsy" : "coordinated";
+            if (Math.Abs(coordination - 1) > .5) sCoordination = "very " + sCoordination;
 
-            double intelligence = player.GetIntelligence();
-            string sIntel = intelligence < 0 ? "dumb" : "smart";
-            if (Math.Abs(intelligence) > .5) sIntel = "very " + sIntel;
+            double intelligence = player.Intelligence;
+            string sIntel = intelligence < 1 ? "dumb" : "smart";
+            if (Math.Abs(intelligence - 1) > .5) sIntel = "very " + sIntel;
 
-            double tech = player.GetTechKnowledge();
-            string sTech = tech < 0 ? "non-technical" : "technical";
-            if (Math.Abs(tech) > .5) sTech = "very " + sTech;
+            double tech = player.Tech_Knowledge;
+            string sTech = tech < 1 ? "non-technical" : "technical";
+            if (Math.Abs(tech - 1) > .5) sTech = "very " + sTech;
 
-            double stink = player.GetStink();
-            string sStink = stink < 0 ? "smelly" : "clean";
-            if (Math.Abs(stink) > .5) sStink = "very " + sStink;
+            double stink = player.Stink;
+            string sStink = stink < 1 ? "smelly" : "clean";
+            if (Math.Abs(stink - 1) > .5) sStink = "very " + sStink;
 
-            int fingerCount = rdm.Next(100) < 95 ? 10 : 10 + rdm.Next(-2, 2);
-            string sFinger = fingerCount.ToString();
+            string sFinger = player.Finger_Count.ToString();
 
 
             embed.AddField("Main", player.GetMain().GetName());
-            if (player.GetSecondary().ID != -1)
-                embed.AddField("Secondary", player.GetSecondary().GetName());
+            var sec = player.GetSecondary();
+            if (sec.ID != -1)
+                embed.AddField("Secondary", sec.GetName());
 
             embed.AddField("Weight", sWeight, true);
             embed.AddField("Charm", sCharm, true);
@@ -260,6 +272,31 @@ namespace Stevebot
             embed.AddField("Tech Knowledge", sTech, true);
             embed.AddField("Stink", sStink, true);
             embed.AddField("Finger Count", sFinger, true);
+
+            await ReplyAsync(embed: embed.Build());
+        }
+
+        [Command("bracket"), Summary("Display the current tournament bracket.")]
+        public async Task Bracket()
+        {
+            await ReplyAsync($"**__{SBPS.Tournament.Current.GetName()}__**```" + SBPS.Tournament.Current.BuildChart() +"```");
+        }
+
+        [Command("bms"), Summary("Get and set information for BradyMS2!")]
+        public async Task BMS(string charName)
+        {
+            BradyMS.BMS.Character chr = new BMS.Character(charName);
+
+            EmbedBuilder embed = new EmbedBuilder()
+            {
+                Title = $"{chr.Name} {(chr.Gender == BradyMS.BMS.Character.CharacterGender.Male ? "♂️" : "♀️")} (Lvl. {chr.Level} {chr.GetJobNiche()})",
+                Description = $"💰 {chr.Mesos:n0} mesos\nCurrent HP: {chr.HP/chr.MaxHP*100}%\nCurrent MP: {chr.MP/chr.MaxMP*100}%",
+                Footer = new EmbedFooterBuilder()
+                {
+                    Text = $"Joined {chr.CreateDate.ToShortDateString()}"
+                }
+            };
+            
 
             await ReplyAsync(embed: embed.Build());
         }

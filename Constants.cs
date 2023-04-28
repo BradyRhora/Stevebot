@@ -37,6 +37,7 @@ namespace Stevebot
         public class Strings
         {
             public const string DB_CONNECTION_STRING = @"data source=Resources\blastPals.db";
+            public const string BMS_CONNECTION_STRING = @"Server=192.168.0.11;Database=cosmic;Uid=cosmic_server_admin;Pwd=";
         }
     }
 }

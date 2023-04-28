@@ -10,21 +10,22 @@ namespace SuperBlastPals
     {
         public class Player : IDataBaseObject
         {
-            public string Name {get; set; }
-            public string Tag {get; set; }
-            public double Weight {get; set; }
-            public double Charm {get; set; }
-            public double Anger {get; set; }
-            public double Depression {get; set; }
-            public double Highness {get; set; }
-            public double Coordination {get; set; }
-            public double Intelligence {get; set; }
-            public double Tech_Knowledge {get; set; }
-            public double Stink {get; set; }
-            public Character Main {get; set; }
-            public Character Secondary {get; set; }
-            public int Finger_Count { get; set; }
-            public int Team_ID { get; set; }
+            public string Tag {get; private set; }
+            public float Weight {get; private set; }
+            public float Charm {get; private set; }
+            public float Anger {get; private set; }
+            public float Depression {get; private set; }
+            public float Highness {get; private set; }
+            public float Coordination {get; private set; }
+            public float Intelligence {get; private set; }
+            public float Tech_Knowledge {get; private set; }
+            public float Stink {get; private set; }
+            public int MainID {get; private set; }
+            public int SecondaryID {get; private set; }
+            public int Finger_Count { get; private set; }
+            public int Team_ID { get; private set; }
+
+            public Player() { }
 
             public Player(int id, bool bypassCheck = false)
             {
@@ -50,24 +51,26 @@ namespace SuperBlastPals
 
                         Name = reader.GetString(0);
                         Tag = reader.GetString(1);
-                        Main = new Character(reader.GetInt32(2));
-                        Secondary = new Character(reader.GetInt32(3)); //* Null check?
+                        MainID = reader.GetInt32(2);
+                        object sec = reader.GetValue(3);
+                        if (sec.GetType() != typeof(DBNull))
+                            SecondaryID = reader.GetInt32(3);
                         
-                        Weight = reader.GetDouble(4);
-                        Charm = reader.GetDouble(5);
-                        Anger = reader.GetDouble(6);
-                        Depression = reader.GetDouble(7);
-                        Highness = reader.GetDouble(8);
+                        Weight = reader.GetFloat(4);
+                        Charm = reader.GetFloat(5);
+                        Anger = reader.GetFloat(6);
+                        Depression = reader.GetFloat(7);
+                        Highness = reader.GetFloat(8);
                         Finger_Count = reader.GetInt32(9);
-                        Coordination = reader.GetDouble(10);
-                        Intelligence = reader.GetDouble(11);
-                        Tech_Knowledge = reader.GetDouble(12);
-                        Stink = reader.GetDouble(13);
+                        Coordination = reader.GetFloat(10);
+                        Intelligence = reader.GetFloat(11);
+                        Tech_Knowledge = reader.GetFloat(12);
+                        Stink = reader.GetFloat(13);
                     }
                 }
             }
 
-            public Player(string name, string tag, int mainID, int secID, double weight, double charm, double anger, double depression, double highness, int fingerCount, double coordination, double intelligence, double tech, double stink)
+            public Player(string name, string tag, int mainID, int secID, float weight, float charm, float anger, float depression, float highness, int fingerCount, float coordination, float intelligence, float tech, float stink)
             {
                 using (var sql = new SQLiteConnection(Constants.Strings.DB_CONNECTION_STRING))
                 {
@@ -147,12 +150,21 @@ namespace SuperBlastPals
 
             public string GetTag(int limit = 0, bool fillEmpty = true, char fillChar = ' ')
             {
-                string tag = GetDBValScalar<string>("Tag");
-                if (limit != 0 && tag.Length > limit)
-                    tag = tag.Substring(0, limit - 2) + "..";
-                if (limit != 0 && tag.Length < limit)
-                    for (int i = limit - tag.Length; i > 0; i--) tag += fillChar;
-                return tag;
+                if (limit != 0 && Tag.Length > limit)
+                    Tag = Tag.Substring(0, limit - 2) + "..";
+                if (limit != 0 && Tag.Length < limit)
+                    for (int i = limit - Tag.Length; i > 0; i--) Tag += fillChar;
+                return Tag;
+            }
+
+            public Character GetMain()
+            {
+                return new Character(MainID);
+            }
+
+            public Character GetSecondary()
+            {
+                return new Character(SecondaryID);
             }
 
             public static Player[] GetAll() //********************** test me
@@ -168,22 +180,26 @@ namespace SuperBlastPals
                         var reader = cmd.ExecuteReader();
                         while (reader.Read())
                         {
-                            Player p = new Player(reader.GetInt32(0));
+                            Player p = new Player();
+                            p.ID = reader.GetInt32(0);
                             p.Name = reader.GetString(1);
                             p.Tag = reader.GetString(2);
-                            p.Main = new Character(reader.GetInt32(3));
-                            p.Secondary = new Character(reader.GetInt32(4)); //* Null check?
+                            p.MainID = reader.GetInt32(3);
 
-                            p.Weight = reader.GetDouble(5);
-                            p.Charm = reader.GetDouble(6);
-                            p.Anger = reader.GetDouble(7);
-                            p.Depression = reader.GetDouble(8);
-                            p.Highness = reader.GetDouble(9);
+                            object sec = reader.GetValue(4);
+                            if (sec.GetType() != typeof(DBNull))
+                                p.SecondaryID = reader.GetInt32(3);
+
+                            p.Weight = reader.GetFloat(5);
+                            p.Charm = reader.GetFloat(6);
+                            p.Anger = reader.GetFloat(7);
+                            p.Depression = reader.GetFloat(8);
+                            p.Highness = reader.GetFloat(9);
                             p.Finger_Count = reader.GetInt32(10);
-                            p.Coordination = reader.GetDouble(11);
-                            p.Intelligence = reader.GetDouble(12);
-                            p.Tech_Knowledge = reader.GetDouble(13);
-                            p.Stink = reader.GetDouble(14);
+                            p.Coordination = reader.GetFloat(11);
+                            p.Intelligence = reader.GetFloat(12);
+                            p.Tech_Knowledge = reader.GetFloat(13);
+                            p.Stink = reader.GetFloat(14);
                             p.Team_ID = reader.GetInt32(15);
                             players.Add(p);
                         }
@@ -231,7 +247,7 @@ namespace SuperBlastPals
                 using (var sql = new SQLiteConnection(Constants.Strings.DB_CONNECTION_STRING))
                 {
                     sql.Open();
-                    var query = $"SELECT ID FROM Players WHERE name like $1 LIMIT 1";
+                    var query = $"SELECT ID FROM Players WHERE name like $1 OR tag LIKE $1 LIMIT 1";
                     using (var cmd = new SQLiteCommand(query, sql))
                     {
                         cmd.Parameters.AddWithValue("$1", '%' + name + '%');
